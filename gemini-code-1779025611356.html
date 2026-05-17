@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MOSSAD GLORY — Intelligence Terminal V2</title>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&family=Exo+2:wght@300;400;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg-primary: #020710;
+      --bg-secondary: #05101f;
+      --bg-card: #08162b;
+      --bg-card-hover: #0c1f3b;
+      --accent: #155cb4;
+      --accent-bright: #388bfd;
+      --accent-glow: rgba(56, 139, 253, 0.25);
+      --accent-soft: rgba(56, 139, 253, 0.12);
+      --text-primary: #ffffff;
+      --text-secondary: #768fa9;
+      --text-muted: #42576c;
+      --border: rgba(56, 139, 253, 0.15);
+      --border-bright: rgba(56, 139, 253, 0.4);
+      --success: #00ff88;
+      --danger: #ff4a4a;
+      
+      /* Couleurs spécifiques des serveurs */
+      --c-black: #2a2d32;
+      --c-white: #ffffff;
+      --c-coral: #ff5252;
+      --c-lime: #00ff88;
+      --c-orange: #ff9f43;
+      --c-yellow: #feca57;
+      --c-blue: #54a0ff;
+      --c-mocha: #875c36;
+      --c-jade: #10ac84;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { 
+      height: 100%; 
+      font-family: 'Rajdhani', sans-serif; 
+      background: var(--bg-primary); 
+      color: var(--text-primary); 
+      overflow: hidden; 
+    }
+
+    /* ── AUTHENTICATION OVERLAY ── */
+    #login-overlay {
+      position: fixed; inset: 0; z-index: 9999;
+      background: var(--bg-primary);
+      display: flex; align-items: center; justify-content: center;
+      flex-direction: column;
+    }
+    .login-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border-bright);
+      border-radius: 16px;
+      padding: 48px 52px;
+      width: 380px;
+      box-shadow: 0 0 60px var(--accent-glow);
+      display: flex; flex-direction: column; gap: 22px;
+    }
+    .login-logo {
+      text-align: center;
+      font-size: 2rem; font-weight: 700; letter-spacing: 3px;
+      color: var(--accent-bright);
+      text-shadow: 0 0 20px var(--accent-glow);
+    }
+    .login-sub { text-align: center; font-size: .82rem; color: var(--text-secondary); letter-spacing: 2px; text-transform: uppercase; }
+    .login-box input[type="password"] {
+      width: 100%; padding: 12px 16px;
+      background: var(--bg-secondary); border: 1px solid var(--border);
+      border-radius: 8px; color: var(--text-primary); font-family: inherit; font-size: 1rem;
+      outline: none;
+    }
+    .login-btn {
+      width: 100%; padding: 13px; border: none; border-radius: 8px;
+      background: var(--accent); color: #fff; font-family: inherit;
+      font-size: 1.05rem; font-weight: 700; letter-spacing: 2px; cursor: pointer;
+    }
+    .login-error { color: var(--danger); font-size: .82rem; text-align: center; min-height: 18px; }
+
+    /* ── INTERFACE TOPBAR ── */
+    header {
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border);
+      padding: 10px 20px;
+      display: flex; align-items: center; justify-content: space-between;
+      font-size: 0.85rem; letter-spacing: 1px;
+      height: 55px; flex-shrink: 0;
+    }
+    .meta-left { display: flex; align-items: center; gap: 30px; }
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .brand-logo { font-size: 1.4rem; font-weight: 700; letter-spacing: 2px; }
+    .brand-sub { font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; }
+    .sys-info { color: var(--text-secondary); display: flex; gap: 15px; }
+    .sys-info span { color: var(--accent-bright); }
+
+    .meta-center { display: flex; align-items: center; gap: 15px; background: rgba(0,0,0,0.3); padding: 5px 15px; border-radius: 20px; border: 1px solid var(--border); }
+    .music-player { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; color: var(--text-secondary); }
+    .music-bar { width: 60px; height: 4px; background: var(--text-muted); border-radius: 2px; position: relative; }
+    .music-bar-fill { width: 70%; height: 100%; background: var(--accent-bright); }
+
+    .meta-right { display: flex; align-items: center; gap: 12px; }
+    .badge-status { display: flex; align-items: center; gap: 6px; background: rgba(0,255,136,0.06); border: 1px solid rgba(0,255,136,0.3); padding: 4px 10px; border-radius: 4px; font-size: 0.75rem; color: var(--success); }
+    .scan-btn { background: rgba(56, 139, 253, 0.1); border: 1px solid var(--accent-bright); color: var(--accent-bright); padding: 4px 12px; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 0.75rem;}
+    .clock-sys { font-family: 'Share Tech Mono', monospace; font-size: 0.95rem; }
+
+    /* ── HORIZONTAL TABS NAVIGATION ── */
+    .main-nav {
+      background: var(--bg-primary);
+      border-bottom: 1px solid var(--border);
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 0 20px; height: 40px; flex-shrink: 0;
+    }
+    .tabs-container { display: flex; gap: 4px; height: 100%; }
+    .tab-item {
+      display: flex; align-items: center; gap: 6px; padding: 0 15px;
+      color: var(--text-secondary); cursor: pointer; font-size: 0.85rem;
+      font-weight: 500; text-transform: uppercase; border-bottom: 2px solid transparent;
+    }
+    .tab-item.active {
+      color: var(--accent-bright); border-bottom-color: var(--accent-bright);
+      background: rgba(56, 139, 253, 0.05);
+    }
+    .system-active-tag { font-size: 0.75rem; color: var(--text-muted); display: flex; align-items: center; gap: 6px; text-transform: uppercase;}
+    .system-active-tag::before { content:''; width: 5px; height: 5px; background: var(--success); border-radius:50%; }
+
+    /* ── DASHBOARD VIEWPORT ENGINE ── */
+    #app-viewport {
+      flex: 1; display: flex; flex-direction: column; overflow: hidden;
+    }
+    .page-wrapper {
+      display: none; flex-content: inherit; flex-direction: column; gap: 20px; padding: 20px; flex: 1; overflow-y: auto;
+    }
+    .page-wrapper.active { display: flex; }
+
+    /* ── GRID LAYOUT FOR THE EXACT IMAGE VIEW ── */
+    .dashboard-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: auto auto;
+      gap: 20px;
+      flex: 1;
+    }
+
+    .servers-grid-container {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; align-content: start;
+    }
+    .server-card {
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; padding: 16px; transition: all 0.2s;
+    }
+    .server-card:hover { border-color: var(--border-bright); background: var(--bg-card-hover); }
+    .card-header-info { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .server-name { font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; }
+    .server-dot { width: 10px; height: 10px; border-radius: 50%; }
+    .server-count { font-size: 2.2rem; font-weight: 700; line-height: 1; margin-bottom: 4px; }
+    .server-label { font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 10px; }
+    .server-progress { height: 3px; background: rgba(255,255,255,0.05); border-radius: 2px; overflow: hidden; }
+    .server-progress-bar { height: 100%; background: var(--accent-bright); }
+
+    .monitor-panel {
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; display: flex; flex-direction: column; padding: 15px;
+    }
+    .monitor-header { font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; display: flex; gap: 15px; margin-bottom: 15px; }
+    .monitor-header span { color: var(--success); }
+    .monitor-body { flex: 1; border: 1px solid rgba(255,255,255,0.02); background: rgba(0,0,0,0.15); border-radius: 4px; padding: 15px; }
+
+    /* ── FULL WIDTH BOTTOM ACTIVITY PANEL ── */
+    .activity-panel {
+      grid-column: 1 / span 2; background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; padding: 16px; display: flex; flex-direction: column; gap: 15px;
+    }
+    .activity-header { display: flex; justify-content: space-between; align-items: center; }
+    .activity-title { font-size: 0.85rem; font-weight: 600; text-transform: uppercase; }
+    .time-filters { display: flex; gap: 5px; }
+    .filter-btn { background: transparent; border: 1px solid var(--border); color: var(--text-secondary); padding: 4px 12px; border-radius: 4px; font-size: 0.75rem; cursor: pointer; }
+    .filter-btn.active, .filter-btn:hover { border-color: var(--border-bright); color: var(--text-primary); }
+
+    .graph-container { display: flex; gap: 20px; min-height: 180px; flex: 1; }
+    .main-chart { flex: 1; position: relative; border-bottom: 1px solid var(--border); border-left: 1px solid var(--border); }
+    .chart-svg { width: 100%; height: 100%; }
+    .chart-legend { width: 100px; display: flex; flex-direction: column; gap: 6px; justify-content: center; }
+    .legend-item { display: flex; align-items: center; gap: 8px; font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; }
+    .legend-box { width: 12px; height: 6px; border-radius: 1px; }
+
+    /* ── FUNCTIONALITY PAGE INNER STYLING (GET COUNTRY, LOOKUP) ── */
+    .feature-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 22px; width: 100%; }
+    .form-row { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 15px; }
+    .form-group { display: flex; flex-direction: column; gap: 7px; flex: 1; min-width: 200px; }
+    .form-group label { font-size: .75rem; color: var(--text-secondary); text-transform: uppercase; }
+    .form-group input, .form-group select { padding: 10px 14px; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px; color: var(--text-primary); font-family: inherit; outline: none; }
+    .form-group input:focus { border-color: var(--accent-bright); }
+    .output-container { margin-top: 20px; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+    .data-cell { background: var(--bg-secondary); border-radius: 8px; padding: 12px; border: 1px solid rgba(255,255,255,0.02); }
+    .data-label { font-size: .68rem; color: var(--text-muted); text-transform: uppercase; }
+    .data-value { font-size: 1.1rem; font-weight: 700; margin-top: 2px; }
+  </style>
+</head>
+<body>
+
+  <div id="login-overlay">
+    <div class="login-box">
+      <div class="login-logo">MOSSAD<span> GLORY</span></div>
+      <div class="login-sub">Dashboard V2 — Accès sécurisé</div>
+      <div class="form-group">
+        <label>Mot de passe</label>
+        <input type="password" id="pwd-input" placeholder="••••••••••••" />
+      </div>
+      <button class="login-btn" onclick="tryLogin()">CONNEXION</button>
+      <div class="login-error" id="login-error"></div>
+    </div>
+  </div>
+
+  <div id="app" style="display:none; flex-direction: column; height: 100vh;">
+    
+    <header>
+      <div class="meta-left">
+        <div class="brand">
+          <div class="brand-logo">MOSSAD GLORY</div>
+          <div class="brand-sub">Intelligence Terminal – V2</div>
+        </div>
+        <div class="sys-info">
+          <div>17/05/2026</div>
+          <div>•</div>
+          <div>DRAPEAU ISRAÉLIEN <span>IL</span></div>
+        </div>
+      </div>
+      <div class="meta-center">
+        <div class="music-player">
+          <span>Tel Aviv – Omer Adam</span>
+          <div class="music-bar"><div class="music-bar-fill"></div></div>
+        </div>
+      </div>
+      <div class="meta-right">
+        <div class="badge-status">API OK</div>
+        <button class="scan-btn">SCAN</button>
+        <div style="color: var(--text-muted); font-size: 0.75rem;">1s</div>
+        <div class="clock-sys">15:19:06</div>
+        <button class="filter-btn" style="padding: 4px 8px;">🕪 SON</button>
+      </div>
+    </header>
+
+    <div class="main-nav">
+      <div class="tabs-container">
+        <div class="tab-item active" onclick="switchTab('dashboard', this)">❖ Dashboard</div>
+        <div class="tab-item" onclick="switchTab('activity', this)">📈 Activité</div>
+        <div class="tab-item" onclick="switchTab('online', this)">☉ En Ligne</div>
+        <div class="tab-item" onclick="switchTab('getcountry', this)">⌖ Pays (Get Country)</div>
+        <div class="tab-item" onclick="switchTab('watchlist', this)">❖ Watchlist</div>
+        <div class="tab-item" onclick="switchTab('swords', this)">⚔ Swords</div>
+      </div>
+      <div class="system-active-tag">Système Actif</div>
+    </div>
+
+    <div id="app-viewport">
+      
+      <div class="page-wrapper active" id="view-dashboard">
+        <div class="dashboard-layout">
+          
+          <div class="servers-grid-container">
+            <div class="server-card">
+              <div class="card-header-info"><span class="server-name">Black</span><div class="server-dot" style="background: var(--c-black); border:1px solid var(--text-muted);"></div></div>
+              <div class="server-count">34</div><div class="server-label">En ligne</div>
+              <div class="server-progress"><div class="server-progress-bar" style="width: 34%;"></div></div>
+            </div>
+            <div class="server-card">
+              <div class="card-header-info"><span class="server-name">White</span><div class="server-dot" style="background: var(--c-white);"></div></div>
+              <div class="server-count">33</div><div class="server-label">En ligne</div>
+              <div class="server-progress"><div class="server-progress-bar" style="width: 33%;"></div></div>
+            </div>
+            <div class="server-card">
+              <div class="card-header-info"><span class="server-name">Coral</span><div class="server-dot" style="background: var(--c-coral);"></div></div>
+              <div class="server-count">32</div><div class="server-label">En ligne</div>
+              <div class="server-progress"><div class="server-progress-bar" style="width: 32%;"></div></div>
+            </div>
+            <div class="server-card">
+              <div class="card-header-info"><span class="server-name">Lime</span><div class="server-dot" style="background: var(--c-lime);"></div></div>
+              <div class="server-count">26</div><div class="server-label">En ligne</div>
+              <div class="server-progress"><div class="server-progress-bar" style="width: 26%;"></div></div>
+            </div>
+            <div class="server-card">
+              <div class="card-header-info"><span class="server-name">Orange</span><div class="server-dot" style="background: var(--c-orange);"></div></div>
+              <div class="server-count">19</div><div class="server-label">En ligne</div>
+              <div class="server-progress"><div class="server-progress-bar" style="width: 19%;"></div></div>
+            </div>
+            <div class="server-card">
+              <div class="card-header-info"><span class="server-name">Yellow</span><div class="server-dot" style="background: var(--c-yellow);"></div></div>
+              <div class="server-count">19</div><div class="server-label">En ligne</div>
+              <div class="server-progress"><div class="server-progress-bar" style="width: 19%;"></div></div>
+            </div>
+            <div class="server-card">
+              <div class="card-header-info"><span class="server-name">Red</span><div class="server-dot" style="background: var(--c-coral);"></div></div>
+              <div class="server-count">0</div><div class="server-label">playercount</div>
+              <div class="server-progress"><div class="server-progress-bar" style="width: 0%;"></div></div>
+            </div>
+            <div class="server-card">
+              <div class="card-header-info"><span class="server-name">Mocha</span><div class="server-dot" style="background: var(--c-mocha);"></div></div>
+              <div class="server-count">0</div><div class="server-label">playercount</div>
+              <div class="server-progress"><div class="server-progress-bar" style="width: 0%;"></div></div>
+            </div>
+          </div>
+
+          <div class="monitor-panel">
+            <div class="monitor-header">
+              <div>• 10.10.27</div>
+              <div>• intelligence_terminal <span>SYS_ACTIVE</span></div>
+            </div>
+            <div class="monitor-body">
+              <p style="color: var(--text-secondary); font-size: 0.85rem; font-family: 'Share Tech Mono', monospace;">READY FOR GEOLOCATION COMMANDS...</p>
+            </div>
+          </div>
+
+          <div class="activity-panel">
+            <div class="activity-header">
+              <div class="activity-title">Activité — Joueurs en ligne</div>
+              <div class="time-filters">
+                <button class="filter-btn">3h</button>
+                <button class="filter-btn">6h</button>
+                <button class="filter-btn active">24h</button>
+                <button class="filter-btn">7j</button>
+              </div>
+            </div>
+            <div class="graph-container">
+              <div class="main-chart">
+                <svg class="chart-svg" viewBox="0 0 500 100" preserveAspectRatio="none">
+                  <path d="M0,90 Q50,20 100,85 T200,90 T300,40 T400,30 T500,95" fill="none" stroke="var(--c-orange)" stroke-width="1.5"/>
+                  <path d="M0,85 Q60,10 120,70 T240,95 T360,20 T480,45 T500,90" fill="none" stroke="var(--c-lime)" stroke-width="1.5"/>
+                  <path d="M0,95 Q40,40 90,90 T180,80 T270,60 T360,50 T450,85 T500,95" fill="none" stroke="var(--c-blue)" stroke-width="1"/>
+                </svg>
+              </div>
+              <div class="chart-legend">
+                <div class="legend-item"><div class="legend-box" style="background: var(--c-blue);"></div>Blue</div>
+                <div class="legend-item"><div class="legend-box" style="background: var(--c-coral);"></div>Coral</div>
+                <div class="legend-item"><div class="legend-box" style="background: var(--c-orange);"></div>Orange</div>
+                <div class="legend-item"><div class="legend-box" style="background: var(--c-yellow);"></div>Yellow</div>
+                <div class="legend-item"><div class="legend-box" style="background: var(--c-white);"></div>White</div>
+                <div class="legend-item"><div class="legend-box" style="background: var(--c-lime);"></div>Lime</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="page-wrapper" id="view-getcountry">
+        <div class="feature-card">
+          <div class="login-logo" style="text-align: left; font-size: 1.4rem;">⌖ GET COUNTRY INTERFACE</div>
+          <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 4px;">Recherche d'informations géographiques et métadonnées globales.</p>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label>Code pays ou Identifiant</label>
+              <input type="text" id="country-query" placeholder="Ex: IL, FR, US..." onkeydown="if(event.key==='Enter')executeCountryLookup()"/>
+            </div>
+            <div class="form-group" style="max-width: 150px; justify-content: flex-end;">
+              <button class="login-btn" style="padding: 10px;" onclick="executeCountryLookup()">RECHERCHER</button>
+            </div>
+          </div>
+
+          <div class="output-container" id="country-output">
+            <div class="data-cell"><div class="data-label">Statut</div><div class="data-value" style="color: var(--text-muted)">En attente</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="page-wrapper" id="view-activity"><div class="feature-card"><h3>Activité Réseau Générale</h3></div></div>
+      <div class="page-wrapper" id="view-online"><div class="feature-card"><h3>Utilisateurs et Serveurs Connectés</h3></div></div>
+      <div class="page-wrapper" id="view-watchlist"><div class="feature-card"><h3>Éléments Surveillés</h3></div></div>
+      <div class="page-wrapper" id="view-swords"><div class="feature-card"><h3>Opérations Stratégiques</h3></div></div>
+
+    </div>
+  </div>
+
+  <script>
+    const AUTH_KEY = "M0ss@dGl0ry#2024!Secure";
+    const NG_API = "NGAPI_b7Tn@i4eIL9ZoLnnqI$Q6%vJ$W1y6oFJf077f5eaac79de484ddd5b73f6663bb1";
+
+    // AUTH ENGINE
+    function tryLogin() {
+      const input = document.getElementById('pwd-input').value;
+      const error = document.getElementById('login-error');
+      if (input === AUTH_KEY) {
+        document.getElementById('login-overlay').style.display = 'none';
+        document.getElementById('app').style.display = 'flex';
+      } else {
+        error.textContent = '⛔ ACCÈS REFUSÉ : Clé invalide.';
+        document.getElementById('pwd-input').value = '';
+      }
+    }
+    document.getElementById('pwd-input').addEventListener('keydown', e => { if (e.key === 'Enter') tryLogin(); });
+
+    // NAVIGATION TABS ENGINE
+    function switchTab(targetId, element) {
+      document.querySelectorAll('.tab-item').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.page-wrapper').forEach(el => el.classList.remove('active'));
+      
+      element.classList.add('active');
+      document.getElementById(`view-${targetId}`).classList.add('active');
+    }
+
+    // FUNCTIONALITY: GET COUNTRY REQUEST LOGIC
+    async function executeCountryLookup() {
+      const query = document.getElementById('country-query').value.trim().toUpperCase();
+      const output = document.getElementById('country-output');
+      if(!query) return;
+
+      output.innerHTML = '<div class="data-cell"><div class="data-label">Système</div><div class="data-value" style="color:var(--accent-bright)">Requête en cours...</div></div>';
+
+      try {
+        const response = await fetch(`https://restcountries.com/v3.1/alpha/${query}`);
+        if (!response.ok) throw new Error('Introuvable');
+        const data = await response.json();
+        const country = data[0];
+
+        output.innerHTML = `
+          <div class="data-cell"><div class="data-label">Nom commun</div><div class="data-value">${country.name.common}</div></div>
+          <div class="data-cell"><div class="data-label">Capitale</div><div class="data-value">${country.capitals ? country.capitals[0] : 'N/A'}</div></div>
+          <div class="data-cell"><div class="data-label">Région</div><div class="data-value">${country.region}</div></div>
+          <div class="data-cell"><div class="data-label">Population</div><div class="data-value">${country.population.toLocaleString()}</div></div>
+          <div class="data-cell"><div class="data-label">Indicatif</div><div class="data-value">${country.idd.root || 'N/A'}</div></div>
+        `;
+      } catch (err) {
+        output.innerHTML = `<div class="data-cell"><div class="data-label">Erreur</div><div class="data-value" style="color:var(--danger)">Code invalide</div></div>`;
+      }
+    }
+  </script>
+</body>
+</html>
