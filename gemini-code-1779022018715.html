@@ -389,10 +389,13 @@
 // ══════════════════════════════════════════════
 const PASSWORD = "M0ss@dGl0ry#2024!Secure";
 const API_KEY  = "NGAPI_b7Tn@i4eIL9ZoLnnqI$Q6%vJ$W1y6oFJf077f5eaac79de484ddd5b73f6663bb1";
-const CORS_PROXY = "https://corsproxy.io/?";
-const NG_BASE = "https://api.nationsglory.fr";
+
+// Utilisation d'un proxy CORS alternatif plus stable pour les API de jeux
+const CORS_PROXY = "https://api.allorigins.win/raw?url=";
+const NG_BASE = "https://publicapi.nationsglory.fr";
 
 function ngUrl(path) {
+  // On encode proprement l'URL cible pour le proxy
   return CORS_PROXY + encodeURIComponent(NG_BASE + path);
 }
 
@@ -421,12 +424,16 @@ document.getElementById('pwd-input').addEventListener('keydown', e => { if (e.ke
 async function apiFetch(path) {
   try {
     const res = await fetch(ngUrl(path), {
-      headers: { 'Authorization': API_KEY }
+      method: 'GET',
+      headers: { 
+        'Accept': 'application/json',
+        'Authorization': API_KEY
+      }
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return await res.json();
   } catch (e) {
-    console.error('API error', path, e);
+    console.error('Erreur API sur le chemin :', path, e);
     return null;
   }
 }
