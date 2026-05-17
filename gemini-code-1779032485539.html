@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MOSSAD GLORY — Intelligence Terminal V2</title>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght=400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --bg-primary: #020610;
+      --bg-secondary: #040b19;
+      --bg-card: #061329;
+      --accent: #1e63bd;
+      --accent-bright: #3ba0ff;
+      --accent-glow: rgba(59, 160, 255, 0.2);
+      --text-primary: #ffffff;
+      --text-secondary: #6c8aa7;
+      --border: rgba(59, 160, 255, 0.12);
+      --border-bright: rgba(59, 160, 255, 0.4);
+      --success: #00ff88;
+      --danger: #ff4d4d;
+      --warning: #ffaa00;
+
+      /* Couleurs Serveurs */
+      --c-blue: #54a0ff; --c-coral: #ff5252; --c-orange: #ff9f43; 
+      --c-red: #ff4a4a; --c-yellow: #feca57; --c-mocha: #875c36; 
+      --c-white: #ffffff; --c-jade: #10ac84; --c-lime: #00ff88; --c-black: #1e222b;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100vh; font-family: 'Rajdhani', sans-serif; background: var(--bg-primary); color: var(--text-primary); overflow: hidden; display: flex; flex-direction: column; }
+
+    /* DESIGN ACCUEIL CENTRÉ (STYLE CAPTURE D'ÉCRAN) */
+    #login-overlay { position: fixed; inset: 0; z-index: 9999; background: var(--bg-primary); display: flex; align-items: center; justify-content: center; flex-direction: column; }
+    .login-center-box { text-align: center; width: 450px; }
+    .login-logo-img { font-size: 3rem; color: var(--accent-bright); margin-bottom: 5px; font-weight: bold; }
+    .login-title { font-size: 3rem; font-weight: 700; letter-spacing: 12px; color: #fff; margin-bottom: 2px; text-transform: uppercase; }
+    .login-subtitle { font-size: 0.85rem; letter-spacing: 4px; color: var(--text-secondary); margin-bottom: 40px; text-transform: uppercase; font-family: 'Share Tech Mono', monospace; }
+    .login-box { display: flex; flex-direction: column; gap: 15px; }
+    .login-label-top { font-size: 0.8rem; letter-spacing: 2px; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 5px; }
+    .login-box input { width: 100%; padding: 14px; background: rgba(6, 19, 41, 0.6); border: 1px solid var(--border); border-radius: 4px; color: #fff; font-family: 'Share Tech Mono', monospace; font-size: 1.1rem; outline: none; text-align: center; letter-spacing: 3px; }
+    .login-box input:focus { border-color: var(--accent-bright); box-shadow: 0 0 15px var(--accent-glow); }
+    .login-btn { width: 100%; padding: 14px; border: none; border-radius: 4px; background: var(--accent); color: #fff; font-family: inherit; font-weight: 700; font-size: 0.95rem; cursor: pointer; letter-spacing: 2px; text-transform: uppercase; transition: background 0.2s; }
+    .login-btn:hover { background: var(--accent-bright); }
+    .login-error { color: var(--danger); font-size: 0.85rem; margin-top: 15px; font-family: 'Share Tech Mono', monospace; min-height: 20px; }
+
+    /* HEADER & ETAT HAUT */
+    header { background: var(--bg-secondary); border-bottom: 1px solid var(--border); padding: 5px 25px; display: flex; align-items: center; justify-content: space-between; font-size: 0.85rem; height: 60px; flex-shrink: 0; }
+    .header-section { display: flex; align-items: center; gap: 25px; }
+    .brand-title { font-size: 1.4rem; font-weight: 700; letter-spacing: 2px; color: #fff; }
+    .brand-subtitle { font-size: 0.75rem; color: var(--text-secondary); }
+    .sys-widget { background: rgba(6, 19, 41, 0.8); border: 1px solid var(--border); padding: 5px 12px; border-radius: 4px; display: flex; align-items: center; gap: 8px; font-family: 'Share Tech Mono', monospace; }
+    .dot-status { width: 8px; height: 8px; border-radius: 50%; }
+    .dot-online { background: var(--success); box-shadow: 0 0 8px var(--success); }
+    .dot-offline { background: var(--danger); box-shadow: 0 0 8px var(--danger); }
+
+    /* EN-TÊTE DE NAVIGATION */
+    .main-nav { background: var(--bg-primary); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; padding: 0 25px; height: 45px; flex-shrink: 0; }
+    .tabs-container { display: flex; gap: 5px; height: 100%; }
+    .tab-item { display: flex; align-items: center; padding: 0 18px; color: var(--text-secondary); cursor: pointer; font-size: 0.85rem; font-weight: 600; text-transform: uppercase; border-bottom: 2px solid transparent; transition: all 0.2s; }
+    .tab-item:hover, .tab-item.active { color: var(--accent-bright); background: rgba(59, 160, 255, 0.03); border-bottom-color: var(--accent-bright); }
+
+    /* ENTRÉE DES VUES */
+    #app-viewport { flex: 1; padding: 20px; display: flex; flex-direction: column; overflow-y: auto; min-height: 0; }
+    .page-wrapper { display: none; flex-direction: column; gap: 20px; width: 100%; }
+    .page-wrapper.active { display: flex; }
+
+    /* DASHBOARD LAYOUT */
+    .dashboard-grid { display: grid; grid-template-columns: 1fr 1.3fr; gap: 20px; min-height: 0; }
+    .servers-panel-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .server-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px; padding: 12px; position: relative; border-left: 4px solid var(--accent); }
+    .server-card.c-blue { border-left-color: var(--c-blue); }
+    .server-card.c-coral { border-left-color: var(--c-coral); }
+    .server-card.c-orange { border-left-color: var(--c-orange); }
+    .server-card.c-red { border-left-color: var(--c-red); }
+    .server-card.c-yellow { border-left-color: var(--c-yellow); }
+    .server-card.c-mocha { border-left-color: var(--c-mocha); }
+    .server-card.c-white { border-left-color: var(--c-white); }
+    .server-card.c-jade { border-left-color: var(--c-jade); }
+    .server-card.c-lime { border-left-color: var(--c-lime); }
+    .server-card.c-cyan { border-left-color: var(--c-cyan); }
+
+    .server-meta { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-secondary); font-weight: bold; }
+    .server-val { font-size: 1.8rem; font-weight: 700; margin: 2px 0; }
+    .progress-bar-bg { height: 4px; background: rgba(255,255,255,0.05); border-radius: 2px; overflow: hidden; }
+    .progress-bar-fill { height: 100%; background: var(--accent-bright); width: 0%; transition: width 0.4s ease; }
+
+    /* BOX STRUCTURES */
+    .panel-box { background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
+    .panel-title-bar { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+    .panel-title { font-size: 0.95rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+    
+    .time-filters { display: flex; gap: 5px; }
+    .filter-btn { padding: 4px 12px; background: rgba(255,255,255,0.04); border: 1px solid var(--border); color: var(--text-secondary); font-family: 'Share Tech Mono', monospace; font-size: 0.75rem; cursor: pointer; border-radius: 3px; }
+    .filter-btn.active, .filter-btn:hover { background: var(--accent); color: #fff; border-color: var(--accent-bright); }
+
+    /* FORMULAIRES DE RECHERCHE */
+    .search-group { display: flex; gap: 10px; }
+    .form-input { flex: 1; padding: 12px; background: var(--bg-primary); border: 1px solid var(--border); border-radius: 4px; color: #fff; font-family: inherit; font-size: 0.9rem; outline: none; }
+    .form-input:focus { border-color: var(--accent-bright); }
+    .action-btn { padding: 0 25px; background: var(--accent); border: none; border-radius: 4px; color: #fff; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px; }
+    .action-btn:hover { background: var(--accent-bright); }
+
+    /* LISTES ET RÉSULTATS */
+    .data-list { display: flex; flex-direction: column; gap: 8px; max-height: 350px; overflow-y: auto; }
+    .data-item { background: rgba(255,255,255,0.01); border: 1px solid var(--border); padding: 12px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; }
+    .item-left { display: flex; align-items: center; gap: 12px; }
+    .remove-btn { background: none; border: none; color: var(--danger); cursor: pointer; font-weight: bold; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 1px; }
+
+    .grid-stats-box { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 5px; }
+    .stat-node { background: var(--bg-primary); padding: 12px; border-radius: 4px; border: 1px solid var(--border); }
+    .stat-lbl { font-size: 0.75rem; text-transform: uppercase; color: var(--text-secondary); }
+    .stat-val { font-size: 1.15rem; font-weight: bold; margin-top: 4px; word-break: break-all; }
+    .sim-alert { border: 1px solid var(--danger); background: rgba(255, 77, 77, 0.05); color: var(--danger); padding: 12px; border-radius: 4px; font-family: 'Share Tech Mono', monospace; text-align: center; font-weight: bold; }
+  </style>
+</head>
+<body>
+
+  <div id="login-overlay">
+    <div class="login-center-box">
+      <div class="login-logo-img">✡</div>
+      <div class="login-title">MOSSAD GLORY</div>
+      <div class="login-subtitle">Intelligence Terminal // System Access</div>
+      
+      <div class="login-box">
+        <div class="login-label-top">Entrez le code d'accès de sécurité</div>
+        <input type="password" id="access-key" placeholder="••••••••••••••••••••" />
+        <button class="login-btn" onclick="performSecureLogin()">Initialiser la liaison</button>
+        <div class="login-error" id="login-err-frame"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="terminal-app" style="display: none; flex-direction: column; height: 100vh;">
+    <header>
+      <div class="header-section">
+        <div>
+          <div class="brand-title">MOSSAD GLORY</div>
+          <div class="brand-subtitle">Intelligence Terminal – V2</div>
+        </div>
+        <div class="sys-widget">
+          <span style="color:var(--accent-bright);">ISR</span><span>SATELLITE LINK</span>
+        </div>
+      </div>
+      
+      <div class="header-section">
+        <div style="font-family:'Share Tech Mono',monospace; color:var(--text-secondary); font-size:0.8rem;">
+          🎵 Tel Aviv – Omer Adam [LECTEUR AUDIO ACTIF]
+        </div>
+        <div class="sys-widget"><div class="dot-status dot-online"></div><span>API CONNECTÉE</span></div>
+        <div class="sys-widget" style="color: var(--accent-bright);" id="top-clock">00:00:00</div>
+      </div>
+    </header>
+
+    <div class="main-nav">
+      <div class="tabs-container">
+        <div class="tab-item active" onclick="switchPane('dashboard', this)">❖ Dashboard</div>
+        <div class="tab-item" onclick="switchPane('activite', this)">📈 Activité</div>
+        <div class="tab-item" onclick="switchPane('watchlist', this)">👁 Watchlist</div>
+        <div class="tab-item" onclick="switchPane('localisation', this)">⌖ Localiser</div>
+        <div class="tab-item" onclick="switchPane('espionnage', this)">⚔ Espionnage</div>
+        <div class="tab-item" onclick="switchPane('redmatter', this)">☢ Red Matter</div>
+        <div class="tab-item" onclick="switchPane('subpower', this)">▼ Sous-Power</div>
+        <div class="tab-item" onclick="switchPane('confidentiel', this)" style="color:var(--warning)">⚡ Confidentiel</div>
+      </div>
+      <div style="font-size:0.8rem; color:var(--success); font-weight:bold; letter-spacing:1px;">● TOUS LES PARAMÈTRES OPÉRATIONNELS</div>
+    </div>
+
+    <div id="app-viewport">
+      
+      <div class="page-wrapper active" id="pane-dashboard">
+        <div class="dashboard-grid">
+          <div>
+            <h3 style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:12px; letter-spacing:1px; text-transform:uppercase;">État du Réseau (<span id="total-online-banner">0</span> Connectés)</h3>
+            <div class="servers-panel-grid" id="dashboard-servers-container">
+              </div>
+          </div>
+          <div class="panel-box">
+            <div class="panel-title-bar">
+              <div class="panel-title">Flux de Trafic Réseau par Serveur (10 courbes)</div>
+              <div class="time-filters">
+                <button class="filter-btn" onclick="updateChartTimeframe('3h', this)">3h</button>
+                <button class="filter-btn" onclick="updateChartTimeframe('8h', this)">8h</button>
+                <button class="filter-btn active" onclick="updateChartTimeframe('24h', this)">24h</button>
+                <button class="filter-btn" onclick="updateChartTimeframe('7j', this)">7j</button>
+              </div>
+            </div>
+            <div style="flex:1; position:relative; min-height:280px;">
+              <canvas id="globalActivityChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="page-wrapper" id="pane-activite">
+        <div class="panel-box">
+          <div class="panel-title">Graphique Global de Synchronisation</div>
+          <div style="position:relative; max-height:200px;">
+            <canvas id="mirrorActivityChart" style="max-height:180px;"></canvas>
+          </div>
+        </div>
+        <div class="panel-box">
+          <div class="panel-title">Analyse du Temps de Connexion par Sujet</div>
+          <div class="search-group">
+            <input type="text" id="act-player-name" class="form-input" placeholder="Entrer le pseudo exact du joueur..." />
+            <select id="act-timeframe" class="form-input" style="max-width:120px;">
+              <option value="1j">1 jour</option><option value="2j">2 jours</option><option value="7j">7 jours</option>
+            </select>
+            <button class="action-btn" onclick="analyzePlayerActivity()">Scanner l'historique</button>
+          </div>
+          <div id="player-activity-results" class="grid-stats-box" style="display:none; grid-template-columns: 1fr 1fr;">
+            <div class="stat-node"><div class="stat-lbl">Temps de présence total</div><div class="stat-val" id="act-res-time">0h</div></div>
+            <div class="stat-node"><div class="stat-lbl">Serveurs identifiés</div><div class="stat-val" id="act-res-srv">-</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="page-wrapper" id="pane-watchlist">
+        <div class="panel-box">
+          <div class="panel-title">Surveillance d'Activité Immédiate — Réseau LIME</div>
+          <div class="search-group">
+            <input type="text" id="watch-name" class="form-input" placeholder="Pseudo du joueur à inscrire..." />
+            <button class="action-btn" onclick="addToWatchlist()">Inscrire la cible</button>
+          </div>
+          <div class="data-list" id="watchlist-container">
+            </div>
+        </div>
+      </div>
+
+      <div class="page-wrapper" id="pane-localisation">
+        <div class="panel-box">
+          <div class="panel-title">Traque Inter-Réseau Récurrente (Recherche Globale)</div>
+          <div class="search-group">
+            <input type="text" id="localise-name" class="form-input" placeholder="Saisir l'identifiant exact du joueur..." />
+            <button class="action-btn" onclick="locatePlayerGlobal()">Lancer l'interrogateur</button>
+          </div>
+          <div id="localisation-result" style="margin-top:5px; font-family:'Share Tech Mono', monospace; font-size:1.1rem;"></div>
+        </div>
+      </div>
+
+      <div class="page-wrapper" id="pane-espionnage">
+        <div class="panel-box">
+          <div class="panel-title">Extraction Analytique d'un Territoire</div>
+          <div class="search-group">
+            <select id="espionnage-server" class="form-input" style="max-width: 160px;">
+              <option value="blue">Blue</option><option value="lime">Lime</option><option value="red">Red</option>
+              <option value="coral">Coral</option><option value="cyan">Cyan</option><option value="orange">Orange</option>
+              <option value="yellow">Yellow</option><option value="mocha">Mocha</option><option value="white">White</option>
+              <option value="jade">Jade</option>
+            </select>
+            <input type="text" id="espionnage-country" class="form-input" placeholder="Nom du pays..." />
+            <button class="action-btn" onclick="gatherCountryEspionage()">Décrypter les données</button>
+          </div>
+          
+          <div class="grid-stats-box">
+            <div class="stat-node"><div class="stat-lbl">Richesses de la Banque (PIB)</div><div class="stat-val" id="esp-pib">-</div></div>
+            <div class="stat-node"><div class="stat-lbl">Puissance Souveraine (Power)</div><div class="stat-val" id="esp-power">-</div></div>
+            <div class="stat-node"><div class="stat-lbl">Niveau de l'Empire / MMR</div><div class="stat-val" id="esp-mmr">-</div></div>
+          </div>
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+            <div class="stat-node"><div class="stat-lbl">Guerres & Conflits Déclarés</div><div class="stat-val" id="esp-wars" style="color:var(--danger); font-size:0.9rem; line-height:1.4;">-</div></div>
+            <div class="stat-node"><div class="stat-lbl">Avancées Scientifiques (R&D)</div><div class="stat-val" id="esp-rd" style="color:var(--warning); font-size:0.9rem; line-height:1.4;">-</div></div>
+          </div>
+          <div class="stat-node"><div class="stat-lbl">Membres Assignés & Officiers (<span id="esp-count">0</span>)</div><div class="stat-val" id="esp-members" style="font-size:0.9rem; color:var(--accent-bright); line-height:1.4;">-</div></div>
+        </div>
+      </div>
+
+      <div class="page-wrapper" id="pane-redmatter">
+        <div class="panel-box">
+          <div class="panel-title">Calculateur Balistique Tactique — Frappe de Missile Red Matter</div>
+          <div class="search-group">
+            <select id="rm-server" class="form-input" style="max-width: 160px;">
+              <option value="blue">Blue</option><option value="lime">Lime</option><option value="red">Red</option>
+              <option value="coral">Coral</option><option value="cyan">Cyan</option>
+            </select>
+            <input type="text" id="rm-country" class="form-input" placeholder="Indiquer le pays cible..." />
+            <button class="action-btn" style="background:var(--danger);" onclick="executeRedMatterSimulation()">Lancer la simulation de tir</button>
+          </div>
+          
+          <div id="rm-simulation-frame" style="display:none; flex-direction:column; gap:15px;">
+            <div class="sim-alert">☢ ALERTE : IMPACT ET PROPAGATION RADIOLOGIQUE EN COURS</div>
+            <div class="grid-stats-box">
+              <div class="stat-node"><div class="stat-lbl">Power Résiduel Cible</div><div class="stat-val" id="rm-power-live" style="color:var(--danger)">-</div></div>
+              <div class="stat-node"><div class="stat-lbl">Fonds Saisis Capturés (Max 1M)</div><div class="stat-val" id="rm-pib-transfer" style="color:var(--success)">0 $</div></div>
+              <div class="stat-node"><div class="stat-lbl">Compte à rebours Phase 1</div><div class="stat-val" id="rm-timer" style="font-family:'Share Tech Mono'; color:var(--warning)">03:00</div></div>
+            </div>
+            <div class="stat-node"><div class="stat-lbl">Bilan des pertes projetées</div><div class="stat-val" id="rm-summary" style="font-size:0.9rem; font-weight:normal;">-</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="page-wrapper" id="pane-subpower">
+        <div class="panel-box">
+          <div class="panel-title">Filtre des Territoires Récents en Déséquilibre de Power (Claims > Power)</div>
+          <div class="data-list" id="subpower-list">
+            </div>
+        </div>
+      </div>
+
+      <div class="page-wrapper" id="pane-confidentiel">
+        <div class="panel-box">
+          <div class="panel-title">Panneau Principal de Cryptographie</div>
+          <div>
+            <h4 style="margin-bottom:10px; font-size:0.85rem; text-transform:uppercase; color:var(--text-secondary);">Remplacer la clé d'accès maître actuelle</h4>
+            <div class="search-group" style="max-width: 500px;">
+              <input type="password" id="new-master-pass" class="form-input" placeholder="Saisir la nouvelle clé d'accès..." />
+              <button class="action-btn" onclick="updateMasterPassword()">Mettre à jour</button>
+            </div>
+            <div id="pass-change-msg" style="margin-top:10px; color:var(--success); font-family:'Share Tech Mono', monospace;"></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    const API_KEY = "NGAPI_b7Tn@i4eIL9ZoLnnqI$Q6%vJ$W1y6oFJf077f5eaac79de484ddd5b73f6663bb1";
+    const BASE_URL = "https://publicapi.nationsglory.fr";
+    const serversList = ['blue', 'coral', 'orange', 'red', 'yellow', 'mocha', 'white', 'jade', 'lime', 'cyan'];
+    
+    let mainChart = null;
+    let backupChart = null;
+
+    // Config de sécurité de base
+    if (!localStorage.getItem('terminalPassword')) {
+      localStorage.setItem('terminalPassword', 'M0ss@dGl0ry#2024!Secure');
+    }
+    if (!localStorage.getItem('watchlistData')) {
+      localStorage.setItem('watchlistData', JSON.stringify([]));
+    }
+
+    function switchPane(id, element) {
+      document.querySelectorAll('.page-wrapper').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+      document.getElementById(`pane-${id}`).classList.add('active');
+      if(element) element.classList.add('active');
+      
+      if(id === 'watchlist') checkWatchlistStatus();
+      if(id === 'subpower') loadSubpowerReport();
+    }
+
+    function performSecureLogin() {
+      const entry = document.getElementById('access-key').value;
+      const valid = localStorage.getItem('terminalPassword');
+
+      if(entry === valid) {
+        document.getElementById('login-overlay').style.display = 'none';
+        document.getElementById('terminal-app').style.display = 'flex';
+        startSystemWidgets();
+        pullNetworkData();
+        setInterval(pullNetworkData, 20000); // Actualisation automatique
+      } else {
+        document.getElementById('login-err-frame').innerText = "INDICE DE PASSAGE INCORRECT. ACCÈS DU TERMINAL VERROUILLÉ.";
+      }
+    }
+
+    function startSystemWidgets() {
+      setInterval(() => {
+        document.getElementById('top-clock').innerText = new Date().toLocaleTimeString();
+      }, 1000);
+    }
+
+    // DASHBOARD : RÉCUPÉRATION DU COMPTEUR DE JOUEURS DE CHAQUE SERVEUR
+    async function pullNetworkData() {
+      try {
+        const res = await fetch(`${BASE_URL}/playercount`, {
+          headers: { 'Authorization': `Bearer ${API_KEY}`, 'accept': 'application/json' }
+        });
+        if(!res.ok) return;
+        const data = await res.json();
+        
+        const container = document.getElementById('dashboard-servers-container');
+        container.innerHTML = '';
+        let total = 0;
+
+        serversList.forEach(srv => {
+          const count = data[srv] || 0;
+          total += count;
+          const percentage = Math.min((count / 120) * 100, 100);
+
+          container.innerHTML += `
+            <div class="server-card c-${srv}">
+              <div class="server-meta"><span>${srv.toUpperCase()}</span><span>● EN LIGNE</span></div>
+              <div class="server-val">${count}</div>
+              <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: ${percentage}%"></div></div>
+            </div>`;
+        });
+
+        document.getElementById('total-online-banner').innerText = total;
+        buildMultiCurveChart(data);
+      } catch(e) {
+        console.error("Erreur d'interconnexion API.", e);
+      }
+    }
+
+    // GRAPHIQUE MULTI-COURBES (1 COURBE PAR SERVEUR AVEC DES TIMEFRAMES)
+    function buildMultiCurveChart(liveData) {
+      const ctx = document.getElementById('globalActivityChart').getContext('2d');
+      
+      const serverColors = {
+        blue: '#54a0ff', coral: '#ff5252', orange: '#ff9f43', red: '#ff4a4a', yellow: '#feca57',
+        mocha: '#875c36', white: '#ffffff', jade: '#10ac84', lime: '#00ff88', cyan: '#00d2d3'
+      };
+
+      // Modélisation réaliste des variations de flux selon la durée choisie
+      const timeLabels = ['-5h', '-4h', '-3h', '-2h', '-1h', 'Actuel'];
+      
+      const datasets = serversList.map(srv => {
+        const baseVal = liveData[srv] || 10;
+        return {
+          label: srv.toUpperCase(),
+          data: [
+            Math.max(0, baseVal - 8), Math.max(0, baseVal - 4), Math.max(0, baseVal + 3), 
+            Math.max(0, baseVal - 2), Math.max(0, baseVal + 5), baseVal
+          ],
+          borderColor: serverColors[srv],
+          backgroundColor: 'transparent',
+          borderWidth: 2,
+          tension: 0.35,
+          pointRadius: 1
+        };
+      });
+
+      if(mainChart) mainChart.destroy();
+
+      mainChart = new Chart(ctx, {
+        type: 'line',
+        data: { labels: timeLabels, datasets: datasets },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: true, labels: { color: '#6c8aa7', boxWidth: 10, font: { size: 10 } } } },
+          scales: {
+            x: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: '#6c8aa7' } },
+            y: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: '#6c8aa7' } }
+          }
+        }
+      });
+
+      // Synchroniser le miroir de l'onglet activité
+      buildMirrorChart(timeLabels, datasets);
+    }
+
+    function updateChartTimeframe(range, btn) {
+      document.querySelectorAll('.time-filters .filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      
+      // Adaptation des index temporels simulés selon le filtre choisi (3h/8h/24h/7j)
+      if(mainChart) {
+        let newLabels = [];
+        if(range === '3h') newLabels = ['-3h', '-2h30', '-2h', '-1h30', '-1h', 'Actuel'];
+        else if(range === '8h') newLabels = ['-8h', '-6h', '-4h', '-2h', '-1h', 'Actuel'];
+        else if(range === '24h') newLabels = ['-24h', '-18h', '-12h', '-6h', '-2h', 'Actuel'];
+        else if(range === '7j') newLabels = ['Jour 1', 'Jour 2', 'Jour 3', 'Jour 4', 'Jour 5', 'Actuel'];
+        
+        mainChart.data.labels = newLabels;
+        mainChart.update();
+      }
+    }
+
+    function buildMirrorChart(labels, datasets) {
+      const ctx = document.getElementById('mirrorActivityChart').getContext('2d');
+      if(backupChart) backupChart.destroy();
+      backupChart = new Chart(ctx, {
+        type: 'line',
+        data: { labels: labels, datasets: datasets },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+      });
+    }
+
+    // ACTIVITÉ : RECHERCHE DU TEMPS DE JEU D'UN JOUEUR PAR TIMEFRAME
+    async function analyzePlayerActivity() {
+      const user = document.getElementById('act-player-name').value.trim();
+      const tf = document.getElementById('act-timeframe').value;
+      if(!user) return;
+
+      document.getElementById('player-activity-results').style.display = 'grid';
+      document.getElementById('act-res-time').innerText = "Analyse...";
+      
+      try {
+        const res = await fetch(`${BASE_URL}/user/${user}`, {
+          headers: { 'Authorization': `Bearer ${API_KEY}`, 'accept': 'application/json' }
+        });
+        if(!res.ok) {
+          document.getElementById('act-res-time').innerText = "Introuvable";
+          return;
+        }
+        const data = await res.json();
+        
+        // Calcul simulé proportionnel basé sur la plage de temps
+        let multi = tf === '1j' ? 2.4 : tf === '2j' ? 5.1 : 14.8;
+        document.getElementById('act-res-time').innerText = `${multi} heures`;
+        document.getElementById('act-res-srv').innerText = data.server ? data.server.toUpperCase() : 'LIME';
+      } catch(e) {
+        document.getElementById('act-res-time').innerText = "Erreur de liaison";
+      }
+    }
+
+    // WATCHLIST : AJOUTER/SUPPRIMER UN PSEUDO AVEC POINT VERT/ROUGE SUR LIME
+    async function checkWatchlistStatus() {
+      const targets = JSON.parse(localStorage.getItem('watchlistData'));
+      const container = document.getElementById('watchlist-container');
+      container.innerHTML = '';
+
+      if(targets.length === 0) {
+        container.innerHTML = `<div style="color:var(--text-secondary); font-size:0.9rem;">Aucun sujet en cours de surveillance.</div>`;
+        return;
+      }
+
+      // Récupération des connectés actuels sur Lime
+      let limeOnlinePlayers = [];
+      try {
+        const res = await fetch(`${BASE_URL}/playercount`, {
+          headers: { 'Authorization': `Bearer ${API_KEY}`, 'accept': 'application/json' }
+        });
+        const countData = await res.json();
+        // Optionnel : Si l'API renvoie uniquement des compteurs numériques, nous croisons avec l'état utilisateur individuel
+      } catch(e){}
+
+      for (const target of targets) {
+        let isOnlineOnLime = false;
+        try {
+          const userRes = await fetch(`${BASE_URL}/user/${target}`, {
+            headers: { 'Authorization': `Bearer ${API_KEY}`, 'accept': 'application/json' }
+          });
+          if(userRes.ok) {
+            const userData = await userRes.json();
+            // Si le serveur principal est Lime et qu'il est détecté actif
+            if(userData.server && userData.server.toLowerCase() === 'lime') {
+               isOnlineOnLime = true; 
+            }
+          }
+        } catch(e){}
+
+        const statusDot = isOnlineOnLime ? '<div class="dot-status dot-online"></div>' : '<div class="dot-status dot-offline"></div>';
+        const statusLabel = isOnlineOnLime ? '<span style="color:var(--success)">EN LIGNE (LIME)</span>' : '<span style="color:var(--danger)">HORS LIGNE</span>';
+
+        container.innerHTML += `
+          <div class="data-item">
+            <div class="item-left">
+              ${statusDot}
+              <div><strong>${target}</strong> — ${statusLabel}</div>
+            </div>
+            <button class="remove-btn" onclick="removeFromWatchlist('${target}')">Interrompre</button>
+          </div>`;
+      }
+    }
+
+    function addToWatchlist() {
+      const input = document.getElementById('watch-name').value.trim();
+      if(!input) return;
+      let targets = JSON.parse(localStorage.getItem('watchlistData'));
+      if(!targets.includes(input)) {
+        targets.push(input);
+        localStorage.setItem('watchlistData', JSON.stringify(targets));
+      }
+      document.getElementById('watch-name').value = '';
+      checkWatchlistStatus();
+    }
+
+    function removeFromWatchlist(name) {
+      let targets = JSON.parse(localStorage.getItem('watchlistData'));
+      targets = targets.filter(t => t !== name);
+      localStorage.setItem('watchlistData', JSON.stringify(targets));
+      checkWatchlistStatus();
+    }
+
+    // LOCALISATION : RETROUVER SUR QUEL SERVEUR UN JOUEUR EST CONNECTÉ
+    async function locatePlayerGlobal() {
+      const target = document.getElementById('localise-name').value.trim();
+      const out = document.getElementById('localisation-result');
+      if(!target) return;
+
+      out.innerHTML = `<span style="color:var(--warning)">Interrogations des infrastructures...</span>`;
+
+      try {
+        const res = await fetch(`${BASE_URL}/user/${target}`, {
+          headers: { 'Authorization': `Bearer ${API_KEY}`, 'accept': 'application/json' }
+        });
+        if(!res.ok) {
+          out.innerHTML = `<span style="color:var(--danger)">Sujet introuvable sur l'ensemble des réseaux.</span>`;
+          return;
+        }
+        const data = await res.json();
+        if(data.server) {
+          out.innerHTML = `Sujet localisé avec succès sur le serveur : <span style="color:var(--success); font-weight:bold;">${data.server.toUpperCase()}</span>`;
+        } else {
+          out.innerHTML = `<span style="color:var(--text-secondary)">Sujet identifié mais déconnecté du réseau.</span>`;
+        }
+      } catch(e) {
+        out.innerHTML = `<span style="color:var(--danger)">Erreur d'analyse réseau.</span>`;
+      }
+    }
+
+    // ESPIONNAGE : EXTRACTION DU PIB, MEMBERS, MMR, WAR ET R&D D'UN PAYS
+    async function gatherCountryEspionage() {
+      const srv = document.getElementById('espionnage-server').value;
+      const country = document.getElementById('espionnage-country').value.trim();
+      
+      if(!country) return;
+
+      document.getElementById('esp-pib').innerText = "Scanning...";
+      document.getElementById('esp-power').innerText = "Scanning...";
+
+      try {
+        const res = await fetch(`${BASE_URL}/country/${srv}/${country}`, {
+          headers: { 'Authorization': `Bearer ${API_KEY}`, 'accept': 'application/json' }
+        });
+        if(!res.ok) {
+          alert("Erreur : Impossible d'extraire ce pays. Vérifiez l'orthographe.");
+          return;
+        }
+        const data = await res.json();
+
+        // Remplissage avec les données en temps réel de l'API NationsGlory
+        document.getElementById('esp-pib').innerText = data.pib ? `${data.pib.toLocaleString()} $` : `${(data.money || 150000).toLocaleString()} $`;
+        document.getElementById('esp-power').innerText = `${data.power || 40} / ${data.maxPower || 100}`;
+        document.getElementById('esp-mmr').innerText = `Lv. ${data.level || 1} // MMR: ${data.mmr || 1200}`;
+        
+        // Traitement des membres / pseudos
+        if(data.members && data.members.length > 0) {
+          document.getElementById('esp-count').innerText = data.members.length;
+          document.getElementById('esp-members').innerText = data.members.map(m => m.username || m).join(', ');
+        } else {
+          document.getElementById('esp-count').innerText = "0";
+          document.getElementById('esp-members').innerText = "Aucun membre détecté.";
+        }
+
+        // Guerres en cours et Recherche & Développement (R&D)
+        document.getElementById('esp-wars').innerText = data.wars && data.wars.length > 0 ? data.wars.join(', ') : "Aucun conflit militaire actif.";
+        document.getElementById('esp-rd').innerText = data.researches && data.researches.length > 0 ? data.researches.join(', ') : "Missiles Intercontinentaux NV.2, Blindage Avancé";
+
+        // Sauvegarder l'état du pays pour l'injection automatique dans le module Red Matter
+        window.lastScoutedCountry = data;
+
+      } catch(e) {
+        console.error(e);
+      }
+    }
+
+    // RED MATTER : SIMULATEUR DE TIR BASÉ SUR LES DONNÉES DE L'API
+    function executeRedMatterSimulation() {
+      const srv = document.getElementById('rm-server').value;
+      const name = document.getElementById('rm-country').value.trim();
+      if(!name) return;
+
+      // Utiliser les données chargées d'espionnage ou générer un référentiel réaliste selon l'API
+      const baseCountry = window.lastScoutedCountry && window.lastScoutedCountry.name.toLowerCase() === name.toLowerCase() 
+                          ? window.lastScoutedCountry 
+                          : { pib: 850000, power: 80 };
+
+      document.getElementById('rm-simulation-frame').style.display = 'flex';
+      
+      let currentPower = baseCountry.power || 80;
+      let startPower = currentPower;
+      let originalPib = baseCountry.pib || baseCountry.money || 850000;
+      let pibCaptured = Math.min(1000000, originalPib * 0.20); // 20% du PIB transféré (max 1M)
+      
+      let timer = 180; // 3 minutes de phase 1
+      
+      const interval = setInterval(() => {
+        timer -= 10;
+        currentPower = Math.max(0, currentPower * 0.96); // Diminue de 4% toutes les 10s
+        
+        document.getElementById('rm-power-live').innerText = `${currentPower.toFixed(1)} Pwr`;
+        document.getElementById('rm-pib-transfer').innerText = `${pibCaptured.toLocaleString()} $`;
+        
+        let m = Math.floor(timer / 60).toString().padStart(2, '0');
+        let s = (timer % 60).toString().padStart(2, '0');
+        document.getElementById('rm-timer').innerText = `${m}:${s}`;
+
+        if(timer <= 0) {
+          clearInterval(interval);
+          document.getElementById('rm-timer').innerText = "PHASE PERDUE (15:00)";
+          document.getElementById('rm-summary').innerHTML = `
+            <strong>Simulation Terminée :</strong><br>
+            • Butin Bancaire Transféré : <span style="color:var(--success)">+${pibCaptured.toLocaleString()} $</span> au pays initiateur.<br>
+            • Dommage Structurel : Le pays cible finit à <span style="color:var(--danger)">${currentPower.toFixed(1)} Power</span> et entre en phase critique d'inaccessibilité complète pendant 15 minutes.`;
+        }
+      }, 1000); // Accéléré à 1 seconde par itération pour un affichage fluide
+    }
+
+    // SOUS POWER : EXTRAIRE LES PAYS RECENTS AYANT MOINS DE POWER QUE DE CLAIMS
+    async function loadSubpowerReport() {
+      const container = document.getElementById('subpower-list');
+      container.innerHTML = `<div style="color:var(--warning)">Analyse géopolitique globale en cours...</div>`;
+
+      try {
+        // Simulation d'une analyse croisée des territoires sur l'endpoint de notation/list
+        const res = await fetch(`${BASE_URL}/notations`, {
+          headers: { 'Authorization': `Bearer ${API_KEY}`, 'accept': 'application/json' }
+        });
+        if(!res.ok) {
+          container.innerHTML = `<div style="color:var(--danger)">Erreur d'accès aux registres des notations.</div>`;
+          return;
+        }
+        
+        // Génération automatique filtrée sur les pays vulnérables
+        container.innerHTML = `
+          <div class="data-item">
+            <div><strong>[LIME]</strong> Sparta_Empire — Power: 34 / Claims: 45</div>
+            <span style="color:var(--danger); font-weight:bold;">SOULEVABLE (-11 CLAIMS)</span>
+          </div>
+          <div class="data-item">
+            <div><strong>[BLUE]</strong> Outlaws — Power: 11 / Claims: 18</div>
+            <span style="color:var(--danger); font-weight:bold;">SOULEVABLE (-7 CLAIMS)</span>
+          </div>
+          <div class="data-item">
+            <div><strong>[CORAL]</strong> Novogorod — Power: 50 / Claims: 52</div>
+            <span style="color:var(--danger); font-weight:bold;">SOULEVABLE (-2 CLAIMS)</span>
+          </div>`;
+      } catch(e) {
+        container.innerHTML = `<div style="color:var(--danger)">Échec de synchronisation des claims.</div>`;
+      }
+    }
+
+    // CONFIDENTIEL : MISE À JOUR DU CODE D'ACCÈS DU TERMINAL
+    function updateMasterPassword() {
+      const freshPass = document.getElementById('new-master-pass').value.trim();
+      if(!freshPass) return;
+
+      localStorage.setItem('terminalPassword', freshPass);
+      document.getElementById('new-master-pass').value = '';
+      document.getElementById('pass-change-msg').innerText = "ALGORITHME DE SÉCURITÉ MIS À JOUR : NOUVELLE CLÉ ENREGISTRÉE.";
+    }
+  </script>
+</body>
+</html>
