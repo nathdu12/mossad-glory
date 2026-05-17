@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MOSSAD GLORY — Intelligence Terminal V2</title>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg-primary: #020710;
+      --bg-secondary: #05101f;
+      --bg-card: #08162b;
+      --bg-card-hover: #0c1f3b;
+      --accent: #155cb4;
+      --accent-bright: #388bfd;
+      --accent-glow: rgba(56, 139, 253, 0.25);
+      --text-primary: #ffffff;
+      --text-secondary: #768fa9;
+      --text-muted: #42576c;
+      --border: rgba(56, 139, 253, 0.15);
+      --border-bright: rgba(56, 139, 253, 0.4);
+      --success: #00ff88;
+      --danger: #ff4a4a;
+      --warning: #ff9f43;
+
+      /* Couleurs Serveurs */
+      --c-lime: #00ff88; --c-red: #ff4a4a; --c-blue: #54a0ff; 
+      --c-mocha: #875c36; --c-jade: #10ac84; --c-orange: #ff9f43; 
+      --c-yellow: #feca57; --c-white: #ffffff; --c-coral: #ff5252; 
+      --c-cyan: #00d2d3; --c-black: #1e222b;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100vh; font-family: 'Rajdhani', sans-serif; background: var(--bg-primary); color: var(--text-primary); overflow: hidden; display: flex; flex-direction: column; }
+
+    /* AUTH OVERLAY */
+    #login-overlay { position: fixed; inset: 0; z-index: 9999; background: var(--bg-primary); display: flex; align-items: center; justify-content: center; }
+    .login-box { background: var(--bg-card); border: 1px solid var(--border-bright); border-radius: 12px; padding: 40px; width: 360px; box-shadow: 0 0 40px var(--accent-glow); display: flex; flex-direction: column; gap: 20px; }
+    .login-logo { text-align: center; font-size: 1.8rem; font-weight: 700; letter-spacing: 2px; color: var(--accent-bright); }
+    .login-box input { width: 100%; padding: 12px; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 6px; color: #fff; font-family: inherit; font-size: 1rem; outline: none; text-align: center; }
+    .login-btn { width: 100%; padding: 12px; border: none; border-radius: 6px; background: var(--accent); color: #fff; font-family: inherit; font-weight: 700; cursor: pointer; letter-spacing: 1px; }
+    .login-error { color: var(--danger); font-size: 0.85rem; text-align: center; min-height: 18px; }
+
+    /* TOP BAR & NAV */
+    header { background: var(--bg-secondary); border-bottom: 1px solid var(--border); padding: 10px 20px; display: flex; align-items: center; justify-content: space-between; font-size: 0.85rem; height: 55px; flex-shrink: 0; }
+    .meta-left, .meta-right, .meta-center { display: flex; align-items: center; gap: 20px; }
+    .brand-logo { font-size: 1.3rem; font-weight: 700; letter-spacing: 1px; }
+    .brand-sub { font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; }
+    .clock-sys { font-family: 'Share Tech Mono', monospace; font-size: 1rem; color: var(--text-primary); }
+
+    .main-nav { background: var(--bg-primary); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; padding: 0 20px; height: 45px; flex-shrink: 0; }
+    .tabs-container { display: flex; gap: 2px; height: 100%; }
+    .tab-item { display: flex; align-items: center; padding: 0 16px; color: var(--text-secondary); cursor: pointer; font-size: 0.85rem; font-weight: 600; text-transform: uppercase; border-bottom: 2px solid transparent; }
+    .tab-item:hover, .tab-item.active { color: var(--accent-bright); background: rgba(56, 139, 253, 0.04); }
+    .tab-item.active { border-bottom-color: var(--accent-bright); }
+    .system-status-tag { font-size: 0.75rem; color: var(--success); text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
+
+    /* VIEWPORT ET CONTENU */
+    #app-viewport { flex: 1; padding: 20px; display: flex; flex-direction: column; min-height: 0; overflow-y: auto; }
+    .page-wrapper { display: none; flex-direction: column; gap: 15px; width: 100%; height: auto; }
+    .page-wrapper.active { display: flex; }
+
+    /* SECTIONS STRUCTURELLES */
+    .dashboard-layout { display: grid; grid-template-columns: 1.5fr 1fr; gap: 15px; }
+    .servers-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+    .server-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; padding: 12px; }
+    .card-meta { display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 4px; }
+    .server-dot { width: 8px; height: 8px; border-radius: 50%; }
+    .server-count { font-size: 1.6rem; font-weight: 700; }
+    .server-progress { height: 3px; background: rgba(255,255,255,0.05); border-radius: 2px; overflow: hidden; margin-top: 4px; }
+    .server-progress-fill { height: 100%; background: var(--accent-bright); width: 0%; transition: width 0.5s ease; }
+
+    .monitor-panel { background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; padding: 15px; display: flex; flex-direction: column; }
+    .monitor-logs { flex: 1; background: rgba(0,0,0,0.2); border-radius: 4px; padding: 12px; font-family: 'Share Tech Mono', monospace; font-size: 0.8rem; color: var(--success); overflow-y: auto; min-height: 140px; max-height: 140px; }
+
+    /* MODULE GRAPHIQUE CORRIGÉ */
+    .activity-panel { background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; padding: 15px; display: flex; flex-direction: column; gap: 10px; margin-top: 5px; }
+    .activity-header { display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; text-transform: uppercase; font-weight: 600; }
+    .graph-area { height: 160px; border-left: 1px solid var(--border); border-bottom: 1px solid var(--border); position: relative; width: 100%; background: rgba(0, 0, 0, 0.15); }
+    .chart-svg { width: 100%; height: 100%; display: block; }
+
+    /* CHAMPS DE RECHERCHE & NODES INTERACTIFS */
+    .search-row { display: flex; gap: 10px; background: var(--bg-card); padding: 15px; border-radius: 6px; border: 1px solid var(--border); align-items: center; }
+    .panel-input { flex: 1; padding: 10px; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 4px; color: #fff; font-family: inherit; outline: none; font-size: 0.9rem; }
+    .panel-input:focus { border-color: var(--accent-bright); }
+    .panel-btn { padding: 10px 20px; background: var(--accent); border: none; border-radius: 4px; color: #fff; font-weight: 600; cursor: pointer; font-family: inherit; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.5px; }
+    .panel-btn:hover { background: var(--accent-bright); }
+    
+    .results-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px; }
+    .result-node { background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; padding: 15px; display: flex; flex-direction: column; gap: 5px; }
+    .node-label { font-size: 0.7rem; text-transform: uppercase; color: var(--text-secondary); }
+    .node-value { font-size: 1.1rem; font-weight: 700; }
+
+    /* CONTENEUR DE LA SIMULATION RED MATTER */
+    .sim-box { background: rgba(255, 74, 74, 0.02); border: 1px solid rgba(255, 74, 74, 0.2); }
+    .sim-progress-bar { height: 4px; background: rgba(255,74,74,0.1); width: 100%; border-radius: 2px; overflow: hidden; margin-top: 10px; }
+    .sim-progress-fill { height: 100%; background: var(--danger); width: 100%; transition: width 1s linear; }
+  </style>
+</head>
+<body>
+
+  <div id="login-overlay">
+    <div class="login-box">
+      <div class="login-logo">MOSSAD GLORY</div>
+      <input type="password" id="global-password-token" placeholder="CLÉ D'ACCÈS MAÎTRE TERMINAL" />
+      <button class="login-btn" onclick="verifyTerminalAccess()">INITIALISER</button>
+      <div class="login-error" id="auth-error-msg"></div>
+    </div>
+  </div>
+
+  <div id="terminal-app" style="display: none; flex-direction: column; height: 100vh;">
+    
+    <header>
+      <div class="meta-left">
+        <div class="brand">
+          <div class="brand-logo">MOSSAD GLORY</div>
+          <div class="brand-sub">Intelligence Terminal – V2</div>
+        </div>
+        <div style="color: var(--text-secondary)">| MONITORING: <span style="color: var(--accent-bright)">NATIONSGLORY API</span></div>
+      </div>
+      <div class="meta-center">
+        <div style="font-family: 'Share Tech Mono', monospace; font-size: 0.85rem; color: var(--text-secondary);">Flux Chiffré AES-256 // Satellite Link Active</div>
+      </div>
+      <div class="meta-right">
+        <div style="background: rgba(0,255,136,0.1); border: 1px solid var(--success); padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; color: var(--success)">SECURE INTERN</div>
+        <div class="clock-sys" id="live-terminal-clock">00:00:00</div>
+      </div>
+    </header>
+
+    <div class="main-nav">
+      <div class="tabs-container">
+        <div class="tab-item active" onclick="navigateTerminal('dashboard', this)">❖ Dashboard</div>
+        <div class="tab-item" onclick="navigateTerminal('watchlist', this)">👁 Watchlist</div>
+        <div class="tab-item" onclick="navigateTerminal('localiser', this)">⌖ Localiser</div>
+        <div class="tab-item" onclick="navigateTerminal('activity', this)">📈 Activité</div>
+        <div class="tab-item" onclick="navigateTerminal('redmatter', this)">☢ Red Matter</div>
+        <div class="tab-item" onclick="navigateTerminal('pays', this)">▲ Pays</div>
+        <div class="tab-item" onclick="navigateTerminal('espionnage', this)">⚔ Espionnage</div>
+        <div class="tab-item" onclick="navigateTerminal('confidentiel', this)" style="color: var(--warning);">⚡ Confidentiel</div>
+      </div>
+      <div class="system-status-tag">● APPARATUS EN LIGNE</div>
+    </div>
+
+    <div id="app-viewport">
+      
+      <div class="page-wrapper active" id="pane-dashboard">
