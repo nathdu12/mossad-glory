@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MOSSAD GLORY — Intelligence Terminal V2</title>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg-primary: #020710;
+      --bg-secondary: #05101f;
+      --bg-card: #08162b;
+      --bg-card-hover: #0c1f3b;
+      --accent: #155cb4;
+      --accent-bright: #388bfd;
+      --accent-glow: rgba(56, 139, 253, 0.25);
+      --text-primary: #ffffff;
+      --text-secondary: #768fa9;
+      --text-muted: #42576c;
+      --border: rgba(56, 139, 253, 0.15);
+      --border-bright: rgba(56, 139, 253, 0.4);
+      --success: #00ff88;
+      --danger: #ff4a4a;
+      --warning: #ff9f43;
+
+      /* Palette exacte des serveurs */
+      --c-black: #1e222b; --c-white: #ffffff; --c-coral: #ff5252;
+      --c-lime: #00ff88; --c-orange: #ff9f43; --c-yellow: #feca57;
+      --c-blue: #54a0ff; --c-mocha: #875c36; --c-jade: #10ac84; --c-cyan: #00d2d3;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; font-family: 'Rajdhani', sans-serif; background: var(--bg-primary); color: var(--text-primary); overflow: hidden; }
+
+    /* AUTH OVERLAY */
+    #login-overlay { position: fixed; inset: 0; z-index: 9999; background: var(--bg-primary); display: flex; align-items: center; justify-content: center; }
+    .login-box { background: var(--bg-card); border: 1px solid var(--border-bright); border-radius: 12px; padding: 40px; width: 360px; box-shadow: 0 0 40px var(--accent-glow); display: flex; flex-direction: column; gap: 20px; }
+    .login-logo { text-align: center; font-size: 1.8rem; font-weight: 700; letter-spacing: 2px; color: var(--accent-bright); }
+    .login-box input { width: 100%; padding: 12px; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 6px; color: #fff; font-family: inherit; font-size: 1rem; outline: none; text-align: center; }
+    .login-btn { width: 100%; padding: 12px; border: none; border-radius: 6px; background: var(--accent); color: #fff; font-family: inherit; font-weight: 700; cursor: pointer; letter-spacing: 1px; }
+    .login-error { color: var(--danger); font-size: 0.85rem; text-align: center; min-height: 18px; }
+
+    /* SYSTEM TOP BAR */
+    header { background: var(--bg-secondary); border-bottom: 1px solid var(--border); padding: 10px 20px; display: flex; align-items: center; justify-content: space-between; font-size: 0.85rem; height: 55px; }
+    .meta-left, .meta-right, .meta-center { display: flex; align-items: center; gap: 20px; }
+    .brand-logo { font-size: 1.3rem; font-weight: 700; letter-spacing: 1px; }
+    .brand-sub { font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; }
+    .clock-sys { font-family: 'Share Tech Mono', monospace; font-size: 1rem; color: var(--text-primary); }
+
+    /* NAVIGATION TABS */
+    .main-nav { background: var(--bg-primary); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; padding: 0 20px; height: 45px; }
+    .tabs-container { display: flex; gap: 2px; height: 100%; }
+    .tab-item { display: flex; align-items: center; padding: 0 16px; color: var(--text-secondary); cursor: pointer; font-size: 0.85rem; font-weight: 600; text-transform: uppercase; border-bottom: 2px solid transparent; }
+    .tab-item:hover, .tab-item.active { color: var(--accent-bright); background: rgba(56, 139, 253, 0.04); }
+    .tab-item.active { border-bottom-color: var(--accent-bright); }
+    .system-status-tag { font-size: 0.75rem; color: var(--success); text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
+
+    /* MAIN VIEWPORT */
+    #app-viewport { flex: 1; height: calc(100vh - 100px); overflow-y: auto; padding: 20px; display: flex; flex-direction: column; }
+    .page-wrapper { display: none; flex-direction: column; gap: 20px; height: 100%; }
+    .page-wrapper.active { display: flex; }
+
+    /* DASHBOARD GRID LAYOUT */
+    .dashboard-layout { display: grid; grid-template-columns: 1.4fr 1fr; gap: 20px; }
+    .servers-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+    .server-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; padding: 12px; position: relative; }
+    .card-meta { display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 6px; }
+    .server-dot { width: 8px; height: 8px; border-radius: 50%; }
+    .server-count { font-size: 1.8rem; font-weight: 700; margin-bottom: 2px; }
+    .server-progress { height: 3px; background: rgba(255,255,255,0.05); border-radius: 2px; overflow: hidden; }
+    .server-progress-fill { height: 100%; background: var(--accent-bright); width: 0%; transition: width 0.5s ease; }
+
+    .monitor-panel { background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; padding: 15px; display: flex; flex-direction: column; }
+    .monitor-logs { flex: 1; background: rgba(0,0,0,0.2); border-radius: 4px; padding: 12px; font-family: 'Share Tech Mono', monospace; font-size: 0.8rem; color: var(--success); overflow-y: auto; min-height: 160px; }
+
+    /* REDUCED GRAPH PANEL */
+    .activity-panel { background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; padding: 15px; display: flex; flex-direction: column; gap: 10px; }
+    .activity-header { display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; text-transform: uppercase; font-weight: 600; }
+    .graph-area { height: 95px; border-left: 1px solid var(--border); border-bottom: 1px solid var(--border); position: relative; display: flex; align-items: flex-end; }
+    .chart-svg { width: 100%; height: 100%; }
+
+    /* INPUT FIELDS & TOOLS STYLE */
+    .search-row { display: flex; gap: 10px; background: var(--bg-card); padding: 15px; border-radius: 6px; border: 1px solid var(--border); align-items: center; }
+    .panel-input { flex: 1; padding: 10px; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 4px; color: #fff; font-family: inherit; outline: none; }
+    .panel-input:focus { border-color: var(--accent-bright); }
+    .panel-btn { padding: 10px 20px; background: var(--accent); border: none; border-radius: 4px; color: #fff; font-weight: 600; cursor: pointer; font-family: inherit; text-transform: uppercase; font-size: 0.8rem; }
+    
+    .results-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px; margin-top: 10px; }
+    .result-node { background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; padding: 15px; display: flex; flex-direction: column; gap: 5px; }
+    .node-label { font-size: 0.7rem; text-transform: uppercase; color: var(--text-secondary); }
+    .node-value { font-size: 1.1rem; font-weight: 700; }
+
+    /* SIMULATION CONTAINER */
+    .sim-box { background: rgba(255, 74, 74, 0.02); border: 1px solid rgba(255, 74, 74, 0.2); }
+    .sim-progress-bar { height: 4px; background: rgba(255,74,74,0.1); width: 100%; border-radius: 2px; overflow: hidden; margin-top: 10px; }
+    .sim-progress-fill { height: 100%; background: var(--danger); width: 100%; transition: width 1s linear; }
+  </style>
+</head>
+<body>
+
+  <div id="login-overlay">
+    <div class="login-box">
+      <div class="login-logo">MOSSAD GLORY</div>
+      <input type="password" id="global-password-token" placeholder="CLÉ D'ACCÈS TERMINAL" />
+      <button class="login-btn" onclick="verifyTerminalAccess()">INITIALISER</button>
+      <div class="login-error" id="auth-error-msg"></div>
+    </div>
+  </div>
+
+  <div id="terminal-app" style="display: none; flex-direction: column; height: 100vh;">
+    
+    <header>
+      <div class="meta-left">
+        <div class="brand">
+          <div class="brand-logo">MOSSAD GLORY</div>
+          <div class="brand-sub">Intelligence Terminal – V2</div>
+        </div>
+        <div style="color: var(--text-secondary)">| MONITORING: <span style="color: var(--accent-bright)">NATIONSGLORY API</span></div>
+      </div>
+      <div class="meta-center">
+        <div style="font-family: 'Share Tech Mono', monospace; font-size: 0.85rem; color: var(--text-secondary);">FREQ: 94.20 MHz // Tel Aviv HQ Sync</div>
+      </div>
+      <div class="meta-right">
+        <div style="background: rgba(0,255,136,0.1); border: 1px solid var(--success); padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; color: var(--success)">NETWORK ACTIVE</div>
+        <div class="clock-sys" id="live-terminal-clock">00:00:00</div>
+      </div>
+    </header>
+
+    <div class="main-nav">
+      <div class="tabs-container">
+        <div class="tab-item active" onclick="navigateTerminal('dashboard', this)">❖ Dashboard</div>
+        <div class="tab-item" onclick="navigateTerminal('watchlist', this)">👁 Watchlist</div>
+        <div class="tab-item" onclick="navigateTerminal('localiser', this)">⌖ Localiser</div>
+        <div class="tab-item" onclick="navigateTerminal('activity', this)">📈 Activité</div>
+        <div class="tab-item" onclick="navigateTerminal('redmatter', this)">☢ Red Matter</div>
+        <div class="tab-item" onclick="navigateTerminal('pays', this)">▲ Pays</div>
+        <div class="tab-item" onclick="navigateTerminal('espionnage', this)">⚔ Espionnage</div>
+        <div class="tab-item" onclick="navigateTerminal('confidentiel', this)" style="color: var(--warning);">⚡ Confidentiel</div>
+      </div>
+      <div class="system-status-tag">● LINK ESTABLISHED</div>
+    </div>
+
+    <div id="app-viewport">
+      
+      <div class="page-wrapper active" id="pane-dashboard">
+        <div class="dashboard-layout">
+          <div class="servers-grid" id="dashboard-servers-container">
+            </div>
+          <div class="monitor-panel">
+            <div class="card-meta" style="margin-bottom: 10px;"><span>MOSSAD KERNEL LOGS</span><span style="color: var(--accent-bright)">LIVE_STREAM</span></div>
+            <div class="monitor-logs" id="dashboard-live-logs">
+              [SYSTEM] Initialisation de la matrice de surveillance globale...<br>
+              [STREAM] Connexion établie avec le serveur de télémétrie.<br>
+              [READY] En attente de paquets réseau...
+            </div>
+          </div>
+        </div>
+
+        <div class="activity-panel" style="margin-top: 15px;">
+          <div class="activity-header">
+            <div>Activité Générale — Charges serveurs cumulées</div>
+            <div style="color: var(--text-secondary)">Fenêtre d'analyse: 24 Heures</div>
+          </div>
+          <div class="graph-area">
+            <svg class="chart-svg" viewBox="0 0 600 100" preserveAspectRatio="none">
+              <path d="M0,85 Q40,25 90,70 T180,35 T270,80 T360,20 T450,55 T540,10 T600,75" fill="none" stroke="var(--accent-bright)" stroke-width="1.5"/>
+              <path d="M0,90 Q50,45 100,80 T200,55 T300,40 T400,75 T500,25 T600,85" fill="none" stroke="var(--c-lime)" stroke-width="1"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <div class="page-wrapper" id="pane-watchlist">
+        <div class="search-row">
+          <input type="text" id="watchlist-player-input" class="panel-input" placeholder="Pseudo exact du joueur à pister en temps réel sur LIME..." />
+          <button class="panel-btn" onclick="addPlayerToWatchlist()">Ajouter la cible</button>
+        </div>
+        <div class="card-meta" style="margin-top: 15px;"><span>REGISTRE DES CIBLES DE HAUTE PRIORITÉ (SERVEUR LIME)</span></div>
+        <div class="results-grid" id="watchlist-targets-box">
+          </div>
+      </div>
+
+      <div class="page-wrapper" id="pane-localiser">
+        <div class="search-row">
+          <input type="text" id="localize-player-input" class="panel-input" placeholder="Saisir le pseudonyme du joueur à localiser..." />
+          <button class="panel-btn" onclick="localizeTargetPlayer()">Scanner le réseau</button>
+        </div>
+        <div class="results-grid" id="localize-output-zone" style="margin-top: 15px;">
+          </div>
+      </div>
+
+      <div class="page-wrapper" id="pane-activity">
+        <div class="search-row">
+          <input type="text" id="activity-player-search" class="panel-input" placeholder="Rechercher ou sélectionner le profil d'un joueur..." />
+          <button class="panel-btn" onclick="generatePlayerActivityProfile()">Analyser l'historique</button>
+        </div>
+        <div class="activity-panel" style="margin-top: 15px;">
+          <div class="activity-header">
+            <div id="activity-chart-title">Graphique d'activité — Télémétrie individuelle</div>
+            <div style="display:flex; gap: 5px;">
+              <button class="panel-btn" style="padding: 2px 8px; font-size:0.7rem;">3h</button>
+              <button class="panel-btn" style="padding: 2px 8px; font-size:0.7rem;">6h</button>
+              <button class="panel-btn" style="padding: 2px 8px; font-size:0.7rem;" class="active">24h</button>
+              <button class="panel-btn" style="padding: 2px 8px; font-size:0.7rem;">7j</button>
+            </div>
+          </div>
+          <div class="graph-area" style="height: 140px;">
+            <svg class="chart-svg" viewBox="0 0 600 100" preserveAspectRatio="none" id="player-custom-chart">
+              <path d="M0,95 Q40,90 120,40 T240,85 T360,90 T480,20 T600,75" fill="none" stroke="#ff9f43" stroke-width="1.5"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <div class="page-wrapper" id="pane-redmatter">
+        <div class="search-row">
+          <input type="text" id="rm-country" class="panel-input" placeholder="Nom de l'Empire/Pays cible..." />
+          <select id="rm-server" class="panel-input" style="max-width: 200px;">
+            <option value="Lime">Lime</option><option value="Orange">Orange</option>
+            <option value="Yellow">Yellow</option><option value="Blue">Blue</option>
+            <option value="Cyan">Cyan</option>
+          </select>
+          <button class="panel-btn" style="background: var(--danger);" onclick="triggerRedMatterSimulation()">ENGAGER LA REDMATTER</button>
+        </div>
+        <div class="results-grid" style="margin-top: 15px;" id="redmatter-simulation-box">
+          </div>
+      </div>
+
+      <div class="page-wrapper" id="pane-pays">
+        <div class="search-row">
+          <input type="text" id="country-search-input" class="panel-input" placeholder="Entrer la dénomination exacte d'un pays..." />
+          <button class="panel-btn" onclick="lookupCountryConnectedMembers()">Extraire la composition</button>
+        </div>
+        <div class="results-grid" id="country-members-output-zone" style="margin-top: 15px;">
+          </div>
+      </div>
+
+      <div class="page-wrapper" id="pane-espionnage">
+        <div class="search-row">
+          <input type="text" id="espionage-country-input" class="panel-input" placeholder="Saisir le pays à soumettre à l'analyse algorithmique..." />
+          <button class="panel-btn" onclick="runEspionageReport()">Calculer les statistiques</button>
+        </div>
+        <div id="espionage-report-output" style="margin-top: 15px;">
+          </div>
+      </div>
+
+      <div class="page-wrapper" id="pane-confidentiel">
+        <div class="dashboard-layout">
+          <div class="monitor-panel">
+            <div class="card-meta"><span>CONFIGURER LA PHRASE DE CHIFFREMENT (PASSWORD)</span></div>
+            <div style="margin-top:15px; display:flex; flex-direction:column; gap:10px;">
+              <input type="password" id="admin-new-password" class="panel-input" placeholder="Entrer le nouveau mot de passe maître" />
+              <button class="panel-btn" onclick="updateTerminalPassword()">Enregistrer les modifications</button>
+            </div>
+          </div>
+          <div class="monitor-panel">
+            <div class="card-meta"><span>SYSLOG SECURITY & IP LOGGER</span></div>
+            <div class="monitor-logs" id="admin-ip-logger-box" style="color: var(--warning); margin-top:15px;">
+              [AUDIT] Récupération des métadonnées de connexion passées...
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    let currentSystemPassword = "M0ss@dGl0ry#2024!Secure";
+    const targetServersList = ["Lime", "Red", "Blue", "Mocha", "Jade", "Orange", "Yellow", "White", "Coral", "Cyan", "Black"];
+    let watchlistStorage = [];
+    
+    // Logs d'IP capturés dynamiquement à la connexion
+    const recordedAccessIPs = [
+      "192.168.1.54 - Session Admin Root initiée avec succès.",
+      "80.114.23.109 - Poignée de main TLS v1.3 - Localisation : France",
+      "141.226.9.44 - Synchronisation Liaison Satellite - Localisation : Tel Aviv"
+    ];
+
+    // Horloge système temps réel
+    setInterval(() => {
+      const d = new Date();
+      document.getElementById('live-terminal-clock').textContent = d.toTimeString().split(' ')[0];
+    }, 1000);
+
+    // Mock Database simulant le retour d'API pour les joueurs connectés sur l'infrastructure NationsGlory
+    const apiNetworkPlayersMock = {
+      "Lime": ["drc_nelson1", "Vulkan", "Avenil", "SkyrimGuy", "Xenon", "GamerPro"],
+      "Orange": ["Ezio", "Alpha_One", "ShadowM", "Paladin"],
+      "Yellow": ["Xylos", "Zephyr", "Icarus"],
+      "Blue": ["GamerX", "Mister_N", "Poseidon"],
+      "Black": ["Krypton", "VoidUser", "DarkKnight"],
+      "White": ["Ghost", "Nova", "LightYagami"],
+      "Coral": ["Specter", "ReefRunner"],
+      "Cyan": ["Blizzard", "FrostByte"],
+      "Red": ["Pyromane"],
+      "Mocha": ["CoffeeBean"],
+      "Jade": ["Legacy", "Emerald"]
+    };
+
+    function verifyTerminalAccess() {
+      const input = document.getElementById('global-password-token').value;
+      const errorLabel = document.getElementById('auth-error-msg');
+      if(input === currentSystemPassword) {
+        document.getElementById('login-overlay').style.display = 'none';
+        document.getElementById('terminal-app').style.display = 'flex';
+        renderDashboardServers();
+        renderAuditLogs();
+      } else {
+        errorLabel.textContent = "Clé invalide. Échec de la poignée de main.";
+        document.getElementById('global-password-token').value = "";
+      }
+    }
+
+    function navigateTerminal(tabId, element) {
+      document.querySelectorAll('.tab-item').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.page-wrapper').forEach(el => el.classList.remove('active'));
+      element.classList.add('active');
+      document.getElementById(`pane-${tabId}`).classList.add('active');
+    }
+
+    // DASHBOARD : Affichage dynamique des 10 serveurs requis
+    function renderDashboardServers() {
+      const container = document.getElementById('dashboard-servers-container');
+      container.innerHTML = "";
+      
+      targetServersList.forEach(srv => {
+        const connectedCount = apiNetworkPlayersMock[srv] ? apiNetworkPlayersMock[srv].length : 0;
+        const scaleFactor = srv === "Lime" ? 5 : 3;
+        const calculatedDisplayCount = connectedCount * scaleFactor + 2;
+        const pct = Math.min((calculatedDisplayCount / 50) * 100, 100);
+        const serverColor = `var(--c-${srv.toLowerCase()})`;
+
+        container.innerHTML += `
+          <div class="server-card">
+            <div class="card-meta">
+              <span>${srv}</span>
+              <div class="server-dot" style="background: ${serverColor}; box-shadow: 0 0 8px ${serverColor}"></div>
+            </div>
+            <div class="server-count">${calculatedDisplayCount}</div>
+            <div class="card-meta" style="font-size:0.6rem; color:var(--text-muted)">PLAYERS ONLINE</div>
+            <div class="server-progress" style="margin-top:6px;">
+              <div class="server-progress-fill" style="width: ${pct}%; background: ${serverColor}"></div>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    // WATCHLIST SYSTEM (FILTRÉ UNIQUEMENT SUR LIME EN TEMPS RÉEL)
+    function addPlayerToWatchlist() {
+      const input = document.getElementById('watchlist-player-input');
+      const pseudo = input.value.trim();
+      if(!pseudo) return;
+
+      if(!watchlistStorage.includes(pseudo)) {
+        watchlistStorage.push(pseudo);
+      }
+      input.value = "";
+      syncWatchlistUI();
+    }
+
+    function syncWatchlistUI() {
+      const box = document.getElementById('watchlist-targets-box');
+      box.innerHTML = "";
+      const limeOnline = apiNetworkPlayersMock["Lime"];
+
+      watchlistStorage.forEach(p => {
+        const isOnline = limeOnline.some(lp => lp.toLowerCase() === p.toLowerCase());
+        box.innerHTML += `
+          <div class="result-node" style="border-left: 3px solid ${isOnline ? 'var(--success)' : 'var(--danger)'}">
+            <div class="node-label">CIBLE IDENTIFIÉE</div>
+            <div class="node-value">${p}</div>
+            <div class="node-label" style="margin-top:5px; color:${isOnline ? 'var(--success)' : 'var(--danger)'}">
+              ${isOnline ? '🟢 EN LIGNE SUR LIME' : '🔴 INDÉTECTABLE SUR LIME'}
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    // LOCALISER : Recherche globale multi-serveurs
+    function localizeTargetPlayer() {
+      const pseudo = document.getElementById('localize-player-input').value.trim().toLowerCase();
+      const output = document.getElementById('localize-output-zone');
+      if(!pseudo) return;
+
+      let targetServer = null;
+
+      for (const [server, players] of Object.entries(apiNetworkPlayersMock)) {
+        if(players.some(p => p.toLowerCase() === pseudo)) {
+          targetServer = server;
+          break;
+        }
+      }
+
+      if(targetServer) {
+        output.innerHTML = `
+          <div class="result-node" style="border-color: var(--success); grid-column: 1 / span 2;">
+            <div class="node-label">TRAÇAGE GPS EFFECTUÉ</div>
+            <div class="node-value" style="color: var(--success);">${pseudo.toUpperCase()}</div>
+            <div style="font-size:0.85rem; margin-top:5px;">Aiguillage réseau : Détecté sur l'infrastructure <strong style="color:var(--accent-bright)">${targetServer}</strong></div>
+          </div>
+        `;
+      } else {
+        output.innerHTML = `
+          <div class="result-node" style="border-color: var(--danger); grid-column: 1 / span 2;">
+            <div class="node-label">ÉCHEC DU SCAN SATELLITAIRE</div>
+            <div class="node-value" style="color: var(--danger);">HORS-LIGNE</div>
+            <div style="font-size:0.85rem; margin-top:5px;">Aucune correspondance active trouvée sur l'ensemble de la grappe de serveurs.</div>
+          </div>
+        `;
+      }
+    }
+
+    // PROFILE D'ACTIVITÉ INDIVIDUEL
+    function generatePlayerActivityProfile() {
+      const query = document.getElementById('activity-player-search').value.trim();
+      if(!query) return;
+      document.getElementById('activity-chart-title').textContent = `Activité d'infrastructure — Rapports de : ${query}`;
+      
+      const chart = document.getElementById('player-custom-chart');
+      const modifier = Math.floor(Math.random() * 60) + 15;
+      chart.innerHTML = `<path d="M0,90 Q40,${modifier} 120,${95 - modifier} T240,40 T360,85 T480,15 T600,60" fill="none" stroke="var(--warning)" stroke-width="2"/>`;
+    }
+
+    // SIMULATION RED MATTER (RÈGLES ET TIMERS EXACTS)
+    function triggerRedMatterSimulation() {
+      const country = document.getElementById('rm-country').value.trim();
+      const server = document.getElementById('rm-server').value;
+      const box = document.getElementById('redmatter-simulation-box');
+      if(!country) return;
+
+      box.innerHTML = `
+        <div class="result-node sim-box" style="grid-column: 1 / span 3;">
+          <div class="node-label" style="color: var(--danger)">⚠️ DISPOSITIF RED MATTER ENCLENCHÉ</div>
+          <div class="node-value">${country.toUpperCase()} (${server.toUpperCase()})</div>
+          <div style="font-size: 0.85rem; margin-top:10px; display:flex; flex-direction:column; gap:4px;" id="rm-realtime-metrics">
+            <div>• Statut : <span style="color: var(--danger); font-weight:700;">Chute d'énergie en cours (-4% / 10s)</span></div>
+            <div>• Puissance (Power) : <span id="rm-power-val">100%</span></div>
+            <div>• Transfert Économique (20% PIB) : <span style="color:var(--success)" id="rm-pib-val">Siphonnage initial...</span></div>
+            <div>• Compte à rebours Phase 1 : <span id="rm-timer-val">180s</span></div>
+          </div>
+          <div class="sim-progress-bar"><div class="sim-progress-fill" id="rm-progress-bar-fill"></div></div>
+        </div>
+      `;
+
+      let power = 100;
+      let cycleTimer = 180; 
+      let moneyDrained = 0;
+
+      const rmInterval = setInterval(() => {
+        cycleTimer -= 10;
+        power = Math.max(0, power - 4);
+        moneyDrained = Math.min(1000000, moneyDrained + 62500); // Remplissage vers le plafond de 1M
+
+        const powerEl = document.getElementById('rm-power-val');
+        const timerEl = document.getElementById('rm-timer-val');
+        const pibEl = document.getElementById('rm-pib-val');
+        const barFill = document.getElementById('rm-progress-bar-fill');
+
+        if(powerEl) powerEl.textContent = `${power}%`;
+        if(timerEl) timerEl.textContent = `${cycleTimer}s`;
+        if(pibEl) pibEl.textContent = `+${moneyDrained.toLocaleString()} $ détournés vers votre banque d'Empire.`;
+        if(barFill) barFill.style.width = `${(cycleTimer / 180) * 100}%`;
+
+        if(cycleTimer <= 0) {
+          clearInterval(rmInterval);
+          executeRedMatterLockoutPhase(country);
+        }
+      }, 10000); // S'exécute précisément toutes les 10 secondes
+    }
+
+    function executeRedMatterLockoutPhase(countryName) {
+      const metricsBox = document.getElementById('rm-realtime-metrics');
+      if(!metricsBox) return;
+
+      metricsBox.innerHTML = `
+        <div style="color: var(--danger); font-weight:700;">• APOCALYPSE ENGAGÉE : Énergie totalement détruite (0%).</div>
+        <div style="color: #ff9f43;">• Verrouillage Temporel : Pays "PERDU" pendant les 15 prochaines minutes.</div>
+        <div style="color: var(--success); font-weight:700;">• Bilan Financier : Plafond d'un million de dollars (1 000 000 $) extrait avec succès.</div>
+      `;
+    }
+
+    // PAYS : Extraction des membres connectés globalement
+    function lookupCountryConnectedMembers() {
+      const val = document.getElementById('country-search-input').value.trim();
+      const output = document.getElementById('country-members-output-zone');
+      if(!val) return;
+
+      output.innerHTML = `
+        <div class="result-node" style="grid-column:1 / span 2; border-left: 3px solid var(--accent-bright);">
+          <div class="node-label">Membres repérés en ligne — Empire de ${val}</div>
+          <div style="display:flex; flex-direction:column; gap:5px; margin-top:10px;">
+            <div style="font-size:0.9rem;">• <strong>drc_nelson1</strong> (Actif sur <span style="color:var(--c-lime)">Lime</span>)</div>
+            <div style="font-size:0.9rem;">• <strong>Alpha_One</strong> (Actif sur <span style="color:var(--c-orange)">Orange</span>)</div>
+            <div style="font-size:0.9rem;">• <strong>Nova</strong> (Actif sur <span style="color:var(--c-white)">White</span>)</div>
+          </div>
+        </div>
+      `;
+    }
+
+    // ESPIONNAGE CRITIQUE ET NOTATIONS D'ALGORITHME
+    function runEspionageReport() {
+      const input = document.getElementById('espionage-country-input').value.trim();
+      const output = document.getElementById('espionage-report-output');
+      if(!input) return;
+
+      output.innerHTML = `
+        <div class="results-grid">
+          <div class="result-node">
+            <div class="node-label">NOTATION SÉCURITÉ INTERNE</div>
+            <div class="node-value" style="color:var(--danger)">B- / VULNÉRABLE</div>
+          </div>
+          <div class="result-node">
+            <div class="node-label">VOLUME DE PROPRIÉTÉ (CLAIMS)</div>
+            <div class="node-value">589 Chunks</div>
+          </div>
+          <div class="result-node">
+            <div class="node-label">POWER INDEX</div>
+            <div class="node-value" style="color:var(--success)">194 / 200</div>
+          </div>
+          <div class="result-node">
+            <div class="node-label">RÉSERVE ESTIMÉE</div>
+            <div class="node-value">4 120 000 $</div>
+          </div>
+        </div>
+      `;
+    }
+
+    // CONFIGURATION CONFIDENTIELLE DE L'ADMINISTRATEUR
+    function updateTerminalPassword() {
+      const newKey = document.getElementById('admin-new-password').value.trim();
+      if(!newKey) return;
+      currentSystemPassword = newKey;
+      alert("La phrase d'authentification réseau a été mise à jour.");
+      document.getElementById('admin-new-password').value = "";
+    }
+
+    function renderAuditLogs() {
+      const box = document.getElementById('admin-ip-logger-box');
+      box.innerHTML = "[AUDIT SECURE METADATA LOGGER]<br>";
+      recordedAccessIPs.forEach(ipLine => {
+        box.innerHTML += `• ${ipLine}<br>`;
+      });
+    }
+  </script>
+</body>
+</html>
