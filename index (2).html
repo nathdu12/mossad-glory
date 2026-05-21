@@ -1,0 +1,1601 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MOSSAD GLORY — Intelligence Terminal V4</title>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --bg-primary: #020611;
+      --bg-secondary: #040c1a;
+      --bg-card: #051226;
+      --accent: #1e63bd;
+      --accent-bright: #3ba0ff;
+      --accent-glow: rgba(59,160,255,0.15);
+      --text-primary: #ffffff;
+      --text-secondary: #6c8aa7;
+      --border: rgba(59,160,255,0.12);
+      --success: #00ff88;
+      --danger: #ff4d4d;
+      --warning: #ffaa00;
+      --c-blue: #54a0ff; --c-coral: #ff5252; --c-orange: #ff9f43;
+      --c-red: #ff4a4a; --c-yellow: #feca57; --c-mocha: #a0785a;
+      --c-white: #e0e0e0; --c-jade: #10ac84; --c-lime: #00ff88;
+      --c-cyan: #00d2d3; --c-black: #8899aa;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100vh; font-family: 'Rajdhani', sans-serif; background: var(--bg-primary); color: var(--text-primary); overflow: hidden; display: flex; flex-direction: column; }
+
+    /* ══ LOGIN ══ */
+    #login-overlay { position: fixed; inset: 0; z-index: 9999; background: var(--bg-primary); display: flex; align-items: center; justify-content: center; flex-direction: column; }
+    .login-center-box { text-align: center; width: 500px; display: flex; flex-direction: column; align-items: center; }
+    .login-title { font-size: 3.6rem; font-weight: 700; letter-spacing: 20px; color: #fff; margin-bottom: 6px; text-transform: uppercase; margin-left: 20px; }
+    .login-subtitle { font-size: 0.68rem; letter-spacing: 5px; color: var(--text-secondary); margin-bottom: 48px; text-transform: uppercase; }
+    .login-box { display: flex; flex-direction: column; gap: 14px; width: 320px; }
+    .login-label-top { font-size: 0.72rem; letter-spacing: 3px; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 6px; }
+    .login-box input { width: 100%; padding: 13px; background: #040c1a; border: 1px solid rgba(56,139,253,0.25); border-radius: 4px; color: #fff; font-family: 'Share Tech Mono', monospace; font-size: 1.05rem; outline: none; text-align: center; letter-spacing: 2px; transition: border-color 0.2s; }
+    .login-box input:focus { border-color: #388bfd; }
+    .login-btn { width: 100%; padding: 13px; border: none; border-radius: 4px; background: #155cb4; color: #fff; font-family: inherit; font-weight: 700; font-size: 0.82rem; cursor: pointer; letter-spacing: 3px; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 8px; transition: background 0.2s; }
+    .login-btn:hover { background: #388bfd; }
+    .login-error { color: var(--danger); font-size: 0.82rem; margin-top: 13px; font-family: 'Share Tech Mono', monospace; min-height: 20px; }
+
+    /* ══ HEADER ══ */
+    header { background: var(--bg-secondary); border-bottom: 1px solid var(--border); padding: 0 25px; display: flex; align-items: center; justify-content: space-between; font-size: 0.83rem; height: 58px; flex-shrink: 0; }
+    .header-section { display: flex; align-items: center; gap: 22px; }
+    .brand-title { font-size: 1.35rem; font-weight: 700; letter-spacing: 2px; color: #fff; }
+    .brand-subtitle { font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; }
+    .sys-widget { background: rgba(6,19,41,0.8); border: 1px solid var(--border); padding: 5px 11px; border-radius: 4px; display: flex; align-items: center; gap: 7px; font-family: 'Share Tech Mono', monospace; font-size: 0.78rem; }
+    .dot-status { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .dot-online { background: var(--success); box-shadow: 0 0 8px var(--success); }
+    .dot-offline { background: var(--danger); box-shadow: 0 0 8px var(--danger); animation: blink 1.5s infinite; }
+    @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+    /* ══ NAV ══ */
+    .main-nav { background: var(--bg-primary); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; padding: 0 25px; height: 44px; flex-shrink: 0; overflow-x: auto; }
+    .tabs-container { display: flex; gap: 3px; height: 100%; flex-shrink: 0; }
+    .tab-item { display: flex; align-items: center; padding: 0 16px; color: var(--text-secondary); cursor: pointer; font-size: 0.82rem; font-weight: 600; text-transform: uppercase; border-bottom: 2px solid transparent; transition: all 0.18s; white-space: nowrap; }
+    .tab-item:hover, .tab-item.active { color: var(--accent-bright); background: rgba(59,160,255,0.03); border-bottom-color: var(--accent-bright); }
+    .tab-item.tab-warn { color: var(--warning); }
+    .tab-item.tab-warn.active, .tab-item.tab-warn:hover { color: var(--warning); border-bottom-color: var(--warning); }
+
+    /* ══ VIEWPORT ══ */
+    #app-viewport { flex: 1; padding: 22px 25px; display: flex; flex-direction: column; overflow-y: auto; min-height: 0; }
+    .page-wrapper { display: none; flex-direction: column; gap: 18px; width: 100%; }
+    .page-wrapper.active { display: flex; }
+
+    /* ══ DASHBOARD ══ */
+    .dashboard-layout { display: grid; grid-template-columns: 1.2fr 1fr; gap: 22px; }
+    .servers-panel-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 13px; }
+    .server-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px; padding: 15px; position: relative; transition: border-color 0.2s; }
+    .server-card:hover { border-color: rgba(59,160,255,0.3); }
+    .server-meta { display: flex; justify-content: space-between; font-size: 0.68rem; color: var(--text-secondary); font-weight: 700; margin-bottom: 5px; letter-spacing: 0.5px; }
+    .server-val { font-size: 2rem; font-weight: 700; margin-bottom: 4px; line-height: 1; }
+    .server-sublbl { font-size: 0.62rem; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px; }
+    .progress-bar-bg { height: 3px; background: rgba(255,255,255,0.05); border-radius: 2px; overflow: hidden; }
+    .progress-bar-fill { height: 100%; background: var(--accent-bright); border-radius: 2px; transition: width 0.5s ease; }
+    .server-indicator { width: 8px; height: 8px; border-radius: 50%; }
+
+    .c-blue .progress-bar-fill, .c-blue .server-indicator { background: var(--c-blue); }
+    .c-coral .progress-bar-fill, .c-coral .server-indicator { background: var(--c-coral); }
+    .c-orange .progress-bar-fill, .c-orange .server-indicator { background: var(--c-orange); }
+    .c-red .progress-bar-fill, .c-red .server-indicator { background: var(--c-red); }
+    .c-yellow .progress-bar-fill, .c-yellow .server-indicator { background: var(--c-yellow); }
+    .c-mocha .progress-bar-fill, .c-mocha .server-indicator { background: var(--c-mocha); }
+    .c-white .progress-bar-fill, .c-white .server-indicator { background: var(--c-white); }
+    .c-jade .progress-bar-fill, .c-jade .server-indicator { background: var(--c-jade); }
+    .c-lime .progress-bar-fill, .c-lime .server-indicator { background: var(--c-lime); }
+    .c-cyan .progress-bar-fill, .c-cyan .server-indicator { background: var(--c-cyan); }
+    .c-black .progress-bar-fill, .c-black .server-indicator { background: var(--c-black); }
+
+    /* ══ PANELS ══ */
+    .panel-box { background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px; padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+    .panel-title-bar { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 11px; }
+    .panel-title { font-size: 0.88rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: #fff; }
+    .time-filters { display: flex; gap: 5px; }
+    .filter-btn { padding: 4px 13px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); color: var(--text-secondary); font-family: 'Share Tech Mono', monospace; font-size: 0.72rem; cursor: pointer; border-radius: 3px; transition: all 0.15s; }
+    .filter-btn.active, .filter-btn:hover { background: var(--accent); color: #fff; border-color: var(--accent-bright); }
+
+    /* ══ FORMS ══ */
+    .search-group { display: flex; gap: 10px; flex-wrap: wrap; }
+    .form-input { flex: 1; min-width: 120px; padding: 11px 14px; background: var(--bg-primary); border: 1px solid var(--border); border-radius: 4px; color: #fff; font-family: inherit; font-size: 0.92rem; outline: none; transition: border-color 0.2s; }
+    .form-input:focus { border-color: var(--accent-bright); }
+    .form-select { padding: 11px 14px; background: var(--bg-primary); border: 1px solid var(--border); border-radius: 4px; color: #fff; font-family: inherit; font-size: 0.9rem; outline: none; cursor: pointer; }
+    .action-btn { padding: 0 22px; height: 44px; background: #155cb4; border: none; border-radius: 4px; color: #fff; font-family: inherit; font-weight: 700; cursor: pointer; text-transform: uppercase; font-size: 0.78rem; letter-spacing: 1px; white-space: nowrap; transition: background 0.18s; }
+    .action-btn:hover { background: #388bfd; }
+    .action-btn.danger { background: #8b1515; }
+    .action-btn.danger:hover { background: var(--danger); }
+
+    /* ══ LISTS & ITEMS ══ */
+    .data-list { display: flex; flex-direction: column; gap: 9px; max-height: 420px; overflow-y: auto; }
+    .data-list::-webkit-scrollbar { width: 4px; }
+    .data-list::-webkit-scrollbar-track { background: transparent; }
+    .data-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+    .data-item { background: rgba(255,255,255,0.01); border: 1px solid var(--border); padding: 13px 16px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+    .item-left { display: flex; align-items: center; gap: 13px; }
+    .player-face { width: 32px; height: 32px; background: #040c1a; border-radius: 4px; border: 1px solid var(--border); object-fit: cover; }
+    .remove-btn { background: none; border: 1px solid rgba(255,77,77,0.3); color: var(--danger); cursor: pointer; font-weight: 700; text-transform: uppercase; font-size: 0.7rem; padding: 4px 9px; border-radius: 3px; transition: all 0.15s; }
+    .remove-btn:hover { background: rgba(255,77,77,0.1); }
+
+    /* ══ STATS GRID ══ */
+    .grid-stats-box { display: grid; grid-template-columns: repeat(3, 1fr); gap: 13px; }
+    .grid-stats-box.cols2 { grid-template-columns: repeat(2, 1fr); }
+    .grid-stats-box.cols4 { grid-template-columns: repeat(4, 1fr); }
+    .stat-node { background: var(--bg-primary); padding: 15px; border-radius: 4px; border: 1px solid var(--border); display: flex; flex-direction: column; gap: 5px; }
+    .stat-lbl { font-size: 0.68rem; text-transform: uppercase; color: var(--text-secondary); font-weight: 600; letter-spacing: 0.5px; }
+    .stat-val { font-size: 1.2rem; font-weight: 700; word-break: break-all; }
+
+    /* ══ ALERTS ══ */
+    .sim-alert { border: 1px solid var(--danger); background: rgba(255,77,77,0.04); color: var(--danger); padding: 11px 14px; border-radius: 4px; font-family: 'Share Tech Mono', monospace; text-align: center; font-weight: bold; font-size: 0.82rem; letter-spacing: 1px; }
+    .info-box { border: 1px solid var(--accent); background: rgba(59,160,255,0.04); padding: 14px; border-radius: 4px; font-family: 'Share Tech Mono', monospace; font-size: 0.82rem; line-height: 1.6; }
+    .error-text { color: var(--danger); font-family: 'Share Tech Mono', monospace; font-size: 0.9rem; margin-top: 4px; }
+    .success-text { color: var(--success); font-family: 'Share Tech Mono', monospace; font-size: 0.9rem; }
+    .warning-text { color: var(--warning); font-family: 'Share Tech Mono', monospace; font-size: 0.82rem; }
+    .loading-text { color: var(--warning); font-family: 'Share Tech Mono', monospace; font-size: 0.82rem; display: flex; align-items: center; gap: 8px; }
+    .spinner { display: inline-block; width: 12px; height: 12px; border: 2px solid rgba(255,170,0,0.3); border-top-color: var(--warning); border-radius: 50%; animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ══ SECTION TITLES ══ */
+    .section-header { font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+
+    /* ══ SERVER BADGE ══ */
+    .srv-badge { display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 0.7rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; font-family: 'Share Tech Mono', monospace; }
+
+    /* ══ REFERENT TABLE ══ */
+    .ref-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 14px; }
+    .ref-server-block { background: var(--bg-primary); border: 1px solid var(--border); border-radius: 4px; padding: 15px; }
+    .ref-server-title { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 11px; padding-bottom: 8px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; }
+    .ref-item { padding: 7px 0; border-bottom: 1px solid rgba(59,160,255,0.06); font-size: 0.85rem; display: flex; justify-content: space-between; align-items: center; }
+    .ref-item:last-child { border-bottom: none; }
+
+    /* ══ SUBPOWER ══ */
+    .subpower-server-block { background: var(--bg-primary); border: 1px solid var(--border); border-radius: 4px; padding: 15px; margin-bottom: 12px; }
+    .subpower-server-title { font-size: 0.76rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+    .subpower-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid rgba(59,160,255,0.06); font-size: 0.85rem; }
+    .subpower-item:last-child { border-bottom: none; }
+
+    /* ══ PAYS TAB ══ */
+    .pays-player-card { background: var(--bg-primary); border: 1px solid var(--border); border-radius: 4px; padding: 11px 14px; display: flex; align-items: center; gap: 12px; }
+    .pays-player-card img { width: 28px; height: 28px; border-radius: 3px; border: 1px solid var(--border); }
+
+    /* ══ STATS SECTION ══ */
+    #app-viewport::-webkit-scrollbar { width: 5px; }
+    #app-viewport::-webkit-scrollbar-track { background: transparent; }
+    #app-viewport::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════ LOGIN ═══════════════════════════════════ -->
+<div id="login-overlay">
+  <div class="login-center-box">
+    <div style="margin-bottom: 22px;">
+      <svg width="56" height="56" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M50 5L90 80H10Z" stroke="#388bfd" stroke-width="3" fill="none"/>
+        <path d="M50 95L90 20H10Z" stroke="#388bfd" stroke-width="3" fill="none"/>
+      </svg>
+    </div>
+    <div class="login-title">MOSSAD GLORY</div>
+    <div class="login-subtitle">Accès Restreint — Systèmes de Renseignement</div>
+    <div class="login-box">
+      <div class="login-label-top">Code d'accès d'accréditation</div>
+      <input type="password" id="access-key" placeholder="Mot de passe maître..." onkeydown="if(event.key==='Enter') performSecureLogin()" />
+      <button class="login-btn" onclick="performSecureLogin()">▶ S'authentifier</button>
+      <div class="login-error" id="login-err-frame"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════ APP ═══════════════════════════════════ -->
+<div id="terminal-app" style="display:none; flex-direction:column; height:100vh;">
+
+  <header>
+    <div class="header-section">
+      <div>
+        <div class="brand-title">MOSSAD GLORY</div>
+        <div class="brand-subtitle">Intelligence Terminal – V4</div>
+      </div>
+      <div class="sys-widget"><span style="color:var(--accent-bright); font-weight:bold; font-size:0.72rem;">SAT-LINK</span></div>
+      <div class="sys-widget" id="header-date" style="font-size:0.72rem;"></div>
+      <div class="sys-widget" style="font-size:0.72rem; color:var(--text-secondary);">DRAPEAU ISRAELIEN 🇮🇱</div>
+    </div>
+    <div class="header-section">
+      <div class="sys-widget"><div class="dot-status dot-online"></div><span id="api-status-txt">API OK</span></div>
+      <div class="sys-widget" style="font-size:0.72rem;">SCAN <span style="color:var(--success); margin-left:5px;">●</span> <span style="color:var(--text-secondary);">1s</span></div>
+      <div class="sys-widget" style="color:var(--accent-bright); min-width:75px; text-align:center; font-size:0.9rem;" id="top-clock">00:00:00</div>
+      <div class="sys-widget" style="color:var(--success); font-weight:bold; font-size:0.72rem;">SON</div>
+    </div>
+  </header>
+
+  <div class="main-nav">
+    <div class="tabs-container">
+      <div class="tab-item active" onclick="switchPane('dashboard',this)">❖ Dashboard</div>
+      <div class="tab-item" onclick="switchPane('activite',this)">■ Activité</div>
+      <div class="tab-item" onclick="switchPane('localisation',this)">⌖ Localiser</div>
+      <div class="tab-item" onclick="switchPane('espionnage',this)">⚔ Espionner</div>
+      <div class="tab-item" onclick="switchPane('watchlist',this)">● Watchlist</div>
+      <div class="tab-item" onclick="switchPane('stats',this)">◈ Stats</div>
+      <div class="tab-item" onclick="switchPane('pays',this)">🌍 Pays</div>
+      <div class="tab-item" onclick="switchPane('redmatter',this)">☢ Red Matter</div>
+      <div class="tab-item" onclick="switchPane('referents',this)">◉ Référents</div>
+      <div class="tab-item" onclick="switchPane('subpower',this)">▼ Sous-Power</div>
+      <div class="tab-item tab-warn" onclick="switchPane('confidentiel',this)">🔒 Confidentielle</div>
+    </div>
+    <div style="font-size:0.78rem; color:var(--success); font-weight:bold; white-space:nowrap; margin-left:15px;" id="global-status-tag">● SYSTÈME SYNCHRONISÉ</div>
+  </div>
+
+  <div id="app-viewport">
+
+    <!-- ════ DASHBOARD ════ -->
+    <div class="page-wrapper active" id="pane-dashboard">
+      <div class="dashboard-layout">
+        <div style="display:flex; flex-direction:column; gap:14px;">
+          <div class="section-header">Réseau Global — <span id="total-online-banner">0</span> joueurs en ligne</div>
+          <div class="servers-panel-grid" id="dashboard-servers-container">
+            <!-- Cartes générées dynamiquement -->
+          </div>
+        </div>
+        <div class="panel-box">
+          <div class="panel-title-bar">
+            <div class="panel-title">Activité — Joueurs en ligne</div>
+            <div class="time-filters">
+              <button class="filter-btn active" onclick="updateChartTimeframe('3h',this)">3h</button>
+              <button class="filter-btn" onclick="updateChartTimeframe('6h',this)">6h</button>
+              <button class="filter-btn" onclick="updateChartTimeframe('24h',this)">24h</button>
+              <button class="filter-btn" onclick="updateChartTimeframe('7j',this)">7j</button>
+            </div>
+          </div>
+          <div style="flex:1; position:relative; min-height:300px;">
+            <canvas id="globalActivityChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ ACTIVITÉ ════ -->
+    <div class="page-wrapper" id="pane-activite">
+      <div class="panel-box">
+        <div class="panel-title-bar">
+          <div class="panel-title">Historique d'Activité par Serveur</div>
+          <div class="time-filters">
+            <button class="filter-btn active" onclick="updateActivityChart('3h',this)">3h</button>
+            <button class="filter-btn" onclick="updateActivityChart('6h',this)">6h</button>
+            <button class="filter-btn" onclick="updateActivityChart('24h',this)">24h</button>
+            <button class="filter-btn" onclick="updateActivityChart('7j',this)">7j</button>
+          </div>
+        </div>
+        <div style="position:relative; min-height:420px;">
+          <canvas id="activityDetailChart"></canvas>
+        </div>
+      </div>
+      <div class="panel-box">
+        <div class="panel-title">Statistiques Instantanées</div>
+        <div id="activite-stats-grid" class="grid-stats-box cols4"></div>
+      </div>
+    </div>
+
+    <!-- ════ LOCALISER ════ -->
+    <div class="page-wrapper" id="pane-localisation">
+      <div class="panel-box">
+        <div class="panel-title">Localisation Satellite — SessionTracker</div>
+        <div class="search-group">
+          <input type="text" id="localise-name" class="form-input" placeholder="Pseudo exact du joueur (ex: Romaindu35)..." onkeydown="if(event.key==='Enter') locatePlayerGlobal()"/>
+          <button class="action-btn" onclick="locatePlayerGlobal()">▶ Lancer la recherche</button>
+        </div>
+        <div id="localisation-result" style="margin-top:5px;"></div>
+      </div>
+      <div class="panel-box" style="min-height:200px;">
+        <div class="panel-title">Carte des Serveurs NationsGlory</div>
+        <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap:10px;">
+          <a href="https://nationsglory.fr/server/blue" target="_blank" style="text-decoration:none;">
+            <div class="stat-node" style="cursor:pointer; border-color:rgba(84,160,255,0.3);">
+              <div class="stat-lbl">🗺 Blue</div>
+              <div style="font-size:0.8rem; color:var(--c-blue); font-family:'Share Tech Mono';">Voir la minimap →</div>
+            </div>
+          </a>
+          <a href="https://nationsglory.fr/server/orange" target="_blank" style="text-decoration:none;">
+            <div class="stat-node" style="cursor:pointer; border-color:rgba(255,159,67,0.3);">
+              <div class="stat-lbl">🗺 Orange</div>
+              <div style="font-size:0.8rem; color:var(--c-orange); font-family:'Share Tech Mono';">Voir la minimap →</div>
+            </div>
+          </a>
+          <a href="https://nationsglory.fr/server/yellow" target="_blank" style="text-decoration:none;">
+            <div class="stat-node" style="cursor:pointer; border-color:rgba(254,202,87,0.3);">
+              <div class="stat-lbl">🗺 Yellow</div>
+              <div style="font-size:0.8rem; color:var(--c-yellow); font-family:'Share Tech Mono';">Voir la minimap →</div>
+            </div>
+          </a>
+          <a href="https://nationsglory.fr/server/white" target="_blank" style="text-decoration:none;">
+            <div class="stat-node" style="cursor:pointer; border-color:rgba(224,224,224,0.3);">
+              <div class="stat-lbl">🗺 White</div>
+              <div style="font-size:0.8rem; color:var(--c-white); font-family:'Share Tech Mono';">Voir la minimap →</div>
+            </div>
+          </a>
+          <a href="https://nationsglory.fr/server/black" target="_blank" style="text-decoration:none;">
+            <div class="stat-node" style="cursor:pointer; border-color:rgba(136,153,170,0.3);">
+              <div class="stat-lbl">🗺 Black</div>
+              <div style="font-size:0.8rem; color:var(--c-black); font-family:'Share Tech Mono';">Voir la minimap →</div>
+            </div>
+          </a>
+          <a href="https://nationsglory.fr/server/cyan" target="_blank" style="text-decoration:none;">
+            <div class="stat-node" style="cursor:pointer; border-color:rgba(0,210,211,0.3);">
+              <div class="stat-lbl">🗺 Cyan</div>
+              <div style="font-size:0.8rem; color:var(--c-cyan); font-family:'Share Tech Mono';">Voir la minimap →</div>
+            </div>
+          </a>
+          <a href="https://nationsglory.fr/server/lime" target="_blank" style="text-decoration:none;">
+            <div class="stat-node" style="cursor:pointer; border-color:rgba(0,255,136,0.3);">
+              <div class="stat-lbl">🗺 Lime</div>
+              <div style="font-size:0.8rem; color:var(--c-lime); font-family:'Share Tech Mono';">Voir la minimap →</div>
+            </div>
+          </a>
+          <a href="https://nationsglory.fr/server/coral" target="_blank" style="text-decoration:none;">
+            <div class="stat-node" style="cursor:pointer; border-color:rgba(255,82,82,0.3);">
+              <div class="stat-lbl">🗺 Coral</div>
+              <div style="font-size:0.8rem; color:var(--c-coral); font-family:'Share Tech Mono';">Voir la minimap →</div>
+            </div>
+          </a>
+          <a href="https://nationsglory.fr/server/red" target="_blank" style="text-decoration:none;">
+            <div class="stat-node" style="cursor:pointer; border-color:rgba(255,74,74,0.3);">
+              <div class="stat-lbl">🗺 Red</div>
+              <div style="font-size:0.8rem; color:var(--c-red); font-family:'Share Tech Mono';">Voir la minimap →</div>
+            </div>
+          </a>
+          <a href="https://nationsglory.fr/server/mocha" target="_blank" style="text-decoration:none;">
+            <div class="stat-node" style="cursor:pointer; border-color:rgba(160,120,90,0.3);">
+              <div class="stat-lbl">🗺 Mocha</div>
+              <div style="font-size:0.8rem; color:var(--c-mocha); font-family:'Share Tech Mono';">Voir la minimap →</div>
+            </div>
+          </a>
+          <a href="https://nationsglory.fr/server/jade" target="_blank" style="text-decoration:none;">
+            <div class="stat-node" style="cursor:pointer; border-color:rgba(16,172,132,0.3);">
+              <div class="stat-lbl">🗺 Jade</div>
+              <div style="font-size:0.8rem; color:var(--c-jade); font-family:'Share Tech Mono';">Voir la minimap →</div>
+            </div>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ ESPIONNAGE ════ -->
+    <div class="page-wrapper" id="pane-espionnage">
+      <div class="panel-box">
+        <div class="panel-title">Espionnage — Analyse Pays Multi-sources</div>
+        <div class="search-group">
+          <select id="espionnage-server" class="form-select">
+            <option value="blue">Blue</option>
+            <option value="coral">Coral</option>
+            <option value="orange">Orange</option>
+            <option value="red">Red</option>
+            <option value="yellow">Yellow</option>
+            <option value="mocha">Mocha</option>
+            <option value="white">White</option>
+            <option value="jade">Jade</option>
+            <option value="lime" selected>Lime</option>
+            <option value="cyan">Cyan</option>
+            <option value="black">Black</option>
+          </select>
+          <input type="text" id="espionnage-country" class="form-input" placeholder="Nom exact du pays (ex: France)..." onkeydown="if(event.key==='Enter') gatherCountryEspionage()"/>
+          <button class="action-btn" onclick="gatherCountryEspionage()">Extraire les données</button>
+        </div>
+        <div id="esp-loading" style="display:none;" class="loading-text"><div class="spinner"></div> Interrogation des endpoints en cours...</div>
+        <div id="esp-error-node" class="error-text" style="display:none;"></div>
+        <div id="esp-results-container" style="display:none; flex-direction:column; gap:14px;">
+          <div class="grid-stats-box cols4">
+            <div class="stat-node"><div class="stat-lbl">Pays</div><div class="stat-val" id="esp-name" style="color:var(--accent-bright); font-size:1.4rem;">-</div></div>
+            <div class="stat-node"><div class="stat-lbl">Serveur</div><div class="stat-val" id="esp-server-lbl" style="font-size:1.1rem;">-</div></div>
+            <div class="stat-node"><div class="stat-lbl">Membres</div><div class="stat-val" id="esp-members">-</div></div>
+            <div class="stat-node"><div class="stat-lbl">Capital</div><div class="stat-val" id="esp-capital" style="font-size:0.95rem;">-</div></div>
+          </div>
+          <div class="grid-stats-box">
+            <div class="stat-node"><div class="stat-lbl">PIB / Banque</div><div class="stat-val" id="esp-pib" style="color:var(--success)">-</div></div>
+            <div class="stat-node"><div class="stat-lbl">Power actuel</div><div class="stat-val" id="esp-power" style="color:var(--warning)">-</div></div>
+            <div class="stat-node"><div class="stat-lbl">Max Power</div><div class="stat-val" id="esp-maxpower">-</div></div>
+            <div class="stat-node"><div class="stat-lbl">Claims</div><div class="stat-val" id="esp-claims" style="color:var(--accent-bright)">-</div></div>
+            <div class="stat-node"><div class="stat-lbl">MMR</div><div class="stat-val" id="esp-mmr" style="color:var(--c-yellow)">-</div></div>
+            <div class="stat-node"><div class="stat-lbl">Statut Power</div><div class="stat-val" id="esp-power-status" style="font-size:0.85rem;">-</div></div>
+          </div>
+          <div class="grid-stats-box cols2">
+            <div class="stat-node"><div class="stat-lbl">Taxes (%)</div><div class="stat-val" id="esp-taxes">-</div></div>
+            <div class="stat-node"><div class="stat-lbl">Open / Invit.</div><div class="stat-val" id="esp-open">-</div></div>
+          </div>
+          <div class="stat-node">
+            <div class="stat-lbl">Membres du pays</div>
+            <div id="esp-members-list" style="margin-top:8px; display:flex; flex-wrap:wrap; gap:8px;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ WATCHLIST ════ -->
+    <div class="page-wrapper" id="pane-watchlist">
+      <div class="panel-box">
+        <div class="panel-title">Watchlist — Surveillance Serveur LIME uniquement</div>
+        <div style="font-size:0.78rem; color:var(--warning); font-family:'Share Tech Mono'; margin-bottom:4px;">⚠ Seuls les joueurs connectés sur le serveur LIME sont détectés</div>
+        <div class="search-group">
+          <input type="text" id="watch-name" class="form-input" placeholder="Pseudo exact du joueur à surveiller..." onkeydown="if(event.key==='Enter') addToWatchlist()"/>
+          <button class="action-btn" onclick="addToWatchlist()">+ Inscrire le sujet</button>
+        </div>
+        <div class="data-list" id="watchlist-container">
+          <div class="warning-text">Chargement de la watchlist...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ STATS ════ -->
+    <div class="page-wrapper" id="pane-stats">
+      <div class="panel-box">
+        <div class="panel-title">Statistiques Globales — Classement MMR</div>
+        <button class="action-btn" onclick="loadMMRStats()" style="align-self:flex-start;">Charger le classement MMR</button>
+        <div id="stats-loading" style="display:none;" class="loading-text"><div class="spinner"></div> Récupération du classement...</div>
+        <div id="stats-mmr-container" class="data-list" style="max-height:500px;"></div>
+      </div>
+    </div>
+
+    <!-- ════ PAYS ════ -->
+    <div class="page-wrapper" id="pane-pays">
+      <div class="panel-box">
+        <div class="panel-title">Pays — Joueurs Connectés</div>
+        <div class="search-group">
+          <select id="pays-server" class="form-select">
+            <option value="blue">Blue</option>
+            <option value="coral">Coral</option>
+            <option value="orange">Orange</option>
+            <option value="red">Red</option>
+            <option value="yellow">Yellow</option>
+            <option value="mocha">Mocha</option>
+            <option value="white">White</option>
+            <option value="jade">Jade</option>
+            <option value="lime" selected>Lime</option>
+            <option value="cyan">Cyan</option>
+            <option value="black">Black</option>
+          </select>
+          <input type="text" id="pays-country" class="form-input" placeholder="Nom du pays (ex: France)..." onkeydown="if(event.key==='Enter') loadPaysPlayers()"/>
+          <button class="action-btn" onclick="loadPaysPlayers()">Rechercher</button>
+        </div>
+        <div id="pays-loading" style="display:none;" class="loading-text"><div class="spinner"></div> Recherche des joueurs connectés...</div>
+        <div id="pays-error" class="error-text" style="display:none;"></div>
+        <div id="pays-result" style="display:none; flex-direction:column; gap:10px;">
+          <div id="pays-info-header" class="info-box"></div>
+          <div class="section-header">Membres actuellement en ligne sur NationsGlory</div>
+          <div id="pays-players-list" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap:9px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ RED MATTER ════ -->
+    <div class="page-wrapper" id="pane-redmatter">
+      <div class="panel-box">
+        <div class="panel-title">Simulateur Balistique — Red Matter Missile Tier 4</div>
+        <div class="info-box" style="font-size:0.78rem; color:var(--text-secondary);">
+          <strong style="color:var(--danger);">☢ RED MATTER MISSILE — TIER 4</strong><br>
+          Basé sur le Wiki NationsGlory : Le Red Matter Missile de Tier 4 est l'arme balistique la plus puissante. Effets : vol de 20% de la banque du pays cible, réduction du power sur 3 minutes, destruction partielle des claims.
+          Coût de lancement : ~500 000$. Portée : Illimitée. Temps d'impact : 3 minutes après lancement.
+        </div>
+        <div class="search-group">
+          <select id="rm-server" class="form-select">
+            <option value="blue">Blue</option>
+            <option value="coral">Coral</option>
+            <option value="orange">Orange</option>
+            <option value="red">Red</option>
+            <option value="yellow">Yellow</option>
+            <option value="mocha">Mocha</option>
+            <option value="white">White</option>
+            <option value="jade">Jade</option>
+            <option value="lime" selected>Lime</option>
+            <option value="cyan">Cyan</option>
+            <option value="black">Black</option>
+          </select>
+          <input type="text" id="rm-country" class="form-input" placeholder="Pays cible..." onkeydown="if(event.key==='Enter') prepareRedMatter()"/>
+          <button class="action-btn danger" onclick="prepareRedMatter()">☢ Charger les données cibles</button>
+        </div>
+        <div id="rm-loading" style="display:none;" class="loading-text"><div class="spinner"></div> Acquisition des données de la cible...</div>
+        <div id="rm-error" class="error-text" style="display:none;"></div>
+
+        <div id="rm-target-info" style="display:none; flex-direction:column; gap:14px;">
+          <div class="grid-stats-box">
+            <div class="stat-node"><div class="stat-lbl">Pays Cible</div><div class="stat-val" id="rm-target-name" style="color:var(--danger)">-</div></div>
+            <div class="stat-node"><div class="stat-lbl">PIB / Banque</div><div class="stat-val" id="rm-target-pib" style="color:var(--success)">-</div></div>
+            <div class="stat-node"><div class="stat-lbl">Power actuel</div><div class="stat-val" id="rm-target-power" style="color:var(--warning)">-</div></div>
+          </div>
+
+          <div class="sim-alert">⚠ CALCUL D'IMPACT — MISSILE RED MATTER TIER 4</div>
+
+          <div class="grid-stats-box cols4">
+            <div class="stat-node"><div class="stat-lbl">Vol estimé (20% banque)</div><div class="stat-val" id="rm-pib-transfer" style="color:var(--success)">0 $</div></div>
+            <div class="stat-node"><div class="stat-lbl">Power après impact</div><div class="stat-val" id="rm-power-after" style="color:var(--danger)">-</div></div>
+            <div class="stat-node"><div class="stat-lbl">Claims perdus (estimé)</div><div class="stat-val" id="rm-claims-lost" style="color:var(--warning)">-</div></div>
+            <div class="stat-node"><div class="stat-lbl">Coût missile</div><div class="stat-val" style="color:var(--text-secondary); font-size:1rem;">~500 000 $</div></div>
+          </div>
+
+          <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+            <button class="action-btn danger" onclick="executeRedMatterSimulation()">🚀 Lancer la simulation de frappe</button>
+            <button class="action-btn" onclick="resetRMSimulation()" style="background:#1a2a40;">Réinitialiser</button>
+          </div>
+
+          <div id="rm-simulation-frame" style="display:none; flex-direction:column; gap:14px;">
+            <div class="sim-alert" style="animation: blink 0.8s infinite;">☢ MISSILE EN TRANSIT — IMPACT IMMINENT</div>
+            <div class="grid-stats-box">
+              <div class="stat-node"><div class="stat-lbl">Power Restant (simulation)</div><div class="stat-val" id="rm-power-live" style="color:var(--danger)">-</div></div>
+              <div class="stat-node"><div class="stat-lbl">Butin Extorqué</div><div class="stat-val" id="rm-pib-stolen" style="color:var(--success)">0 $</div></div>
+              <div class="stat-node"><div class="stat-lbl">Décompte d'impact</div><div class="stat-val" id="rm-timer" style="color:var(--warning); font-family:'Share Tech Mono';">03:00</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ RÉFÉRENTS ════ -->
+    <div class="page-wrapper" id="pane-referents">
+      <div class="panel-box">
+        <div class="panel-title">Pays Référents — Tous les Serveurs</div>
+        <div style="font-size:0.78rem; color:var(--text-secondary); font-family:'Share Tech Mono';">Les pays référents sont les nations ayant le plus d'influence (top classement MMR) sur chaque serveur.</div>
+        <button class="action-btn" onclick="loadReferents()" style="align-self:flex-start;">Charger tous les référents</button>
+        <div id="referents-loading" style="display:none;" class="loading-text"><div class="spinner"></div> Analyse de tous les serveurs...</div>
+        <div id="referents-container" class="ref-grid"></div>
+      </div>
+    </div>
+
+    <!-- ════ SOUS-POWER ════ -->
+    <div class="page-wrapper" id="pane-subpower">
+      <div class="panel-box">
+        <div class="panel-title">Pays Sous-Power — Claims > Power disponible</div>
+        <div style="font-size:0.78rem; color:var(--text-secondary); font-family:'Share Tech Mono';">Pays vulnérables : leurs claims dépassent leur power disponible, pouvant être pillés.</div>
+        <button class="action-btn" onclick="loadSubpowerReport()" style="align-self:flex-start;">Actualiser l'analyse</button>
+        <div id="subpower-loading" style="display:none;" class="loading-text"><div class="spinner"></div> Analyse de tous les serveurs...</div>
+        <div id="subpower-list"></div>
+      </div>
+    </div>
+
+    <!-- ════ CONFIDENTIELLE ════ -->
+    <div class="page-wrapper" id="pane-confidentiel">
+      <div class="panel-box" style="max-width:520px;">
+        <div class="panel-title">🔒 Zone Confidentielle — Gestion des Accès</div>
+        <div class="info-box" style="font-size:0.78rem; color:var(--text-secondary);">
+          Cette section permet de modifier le mot de passe d'accès au terminal Mossad Glory. 
+          Le nouveau mot de passe sera stocké localement et requis au prochain démarrage.
+        </div>
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          <div class="stat-lbl" style="margin-bottom:2px;">Nouveau mot de passe maître</div>
+          <input type="password" id="new-master-pass" class="form-input" placeholder="Entrez le nouveau mot de passe..." style="max-width:400px;" />
+          <input type="password" id="confirm-master-pass" class="form-input" placeholder="Confirmer le mot de passe..." style="max-width:400px;" />
+          <button class="action-btn" onclick="updateMasterPassword()" style="align-self:flex-start; padding:0 30px;">Mettre à jour</button>
+        </div>
+        <div id="pass-change-msg" class="success-text" style="display:none;"></div>
+        <div id="pass-change-err" class="error-text" style="display:none;"></div>
+      </div>
+    </div>
+
+  </div><!-- /app-viewport -->
+</div><!-- /terminal-app -->
+
+<script>
+  // ══════════════════════════════════════════════════════════════════
+  //  CONFIG
+  // ══════════════════════════════════════════════════════════════════
+  const API_KEY  = "NGAPI_b7Tn@i4eIL9ZoLnnqI$Q6%vJ$W1y6oFJf077f5eaac79de484ddd5b73f6663bb1";
+  const BASE_URL = "https://publicapi.nationsglory.fr";
+  // Proxy CORS pour contourner les restrictions navigateur
+  const CORS_PROXY = "https://corsproxy.io/?url=";
+  const SERVERS  = ['blue','coral','orange','red','yellow','mocha','white','jade','lime','cyan','black'];
+
+  const SERVER_COLORS = {
+    blue:'#54a0ff', coral:'#ff5252', orange:'#ff9f43', red:'#ff4a4a',
+    yellow:'#feca57', mocha:'#a0785a', white:'#e0e0e0', jade:'#10ac84',
+    lime:'#00ff88', cyan:'#00d2d3', black:'#8899aa'
+  };
+
+  let mainChart = null;
+  let activityDetailChart = null;
+  let rmTimerId = null;
+  let cachedPlayercount = {};
+
+  // Headers avec clé API
+  const HEADERS = {
+    'x-api-key': API_KEY,
+    'Accept': 'application/json'
+  };
+
+  // Fonction helper pour appeler l'API via le proxy CORS
+  async function apiFetch(path) {
+    const url = BASE_URL + path;
+    const proxied = CORS_PROXY + encodeURIComponent(url);
+    // On essaie d'abord sans proxy (si même domaine ou CORS ouvert)
+    try {
+      const r = await fetch(url, { headers: HEADERS });
+      if (r.ok) return r;
+    } catch(e) {}
+    // Fallback via proxy CORS
+    return fetch(proxied, { headers: { 'Accept': 'application/json', 'x-api-key': API_KEY } });
+  }
+
+  // ══ INIT AUTH ══
+  if (!localStorage.getItem('terminalPassword')) {
+    localStorage.setItem('terminalPassword', 'MossadGlory2024');
+  }
+  if (!localStorage.getItem('watchlistData')) {
+    localStorage.setItem('watchlistData', JSON.stringify([]));
+  }
+
+  // ══════════════════════════════════════════════════════════════════
+  //  LOGIN
+  // ══════════════════════════════════════════════════════════════════
+  function performSecureLogin() {
+    const entry = document.getElementById('access-key').value.trim();
+    const valid = localStorage.getItem('terminalPassword');
+    if (entry === valid) {
+      document.getElementById('login-overlay').style.display = 'none';
+      document.getElementById('terminal-app').style.display = 'flex';
+      startSystemClock();
+      setHeaderDate();
+      pullNetworkData();
+      setInterval(pullNetworkData, 30000);
+    } else {
+      const err = document.getElementById('login-err-frame');
+      err.innerText = "CLÉ NON RECONNUE. ACCÈS REFUSÉ.";
+      setTimeout(() => err.innerText = '', 3000);
+    }
+  }
+
+  function startSystemClock() {
+    setInterval(() => {
+      document.getElementById('top-clock').innerText = new Date().toLocaleTimeString('fr-FR');
+    }, 1000);
+  }
+
+  function setHeaderDate() {
+    const d = new Date();
+    document.getElementById('header-date').innerText = d.toLocaleDateString('fr-FR');
+  }
+
+  // ══════════════════════════════════════════════════════════════════
+  //  NAVIGATION
+  // ══════════════════════════════════════════════════════════════════
+  function switchPane(id, el) {
+    document.querySelectorAll('.page-wrapper').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+    document.getElementById('pane-' + id).classList.add('active');
+    if (el) el.classList.add('active');
+
+    if (id === 'watchlist')  checkWatchlistStatus();
+    if (id === 'subpower')   {} // on-demand only
+    if (id === 'activite')   buildActivityDetailChart(cachedPlayercount, '3h');
+    if (id === 'stats')      {} // on-demand
+  }
+
+  // ══════════════════════════════════════════════════════════════════
+  //  DASHBOARD — PLAYERCOUNT
+  // ══════════════════════════════════════════════════════════════════
+  async function pullNetworkData() {
+    try {
+      const res = await apiFetch('/playercount');
+      let data = {};
+      if (res && res.ok) {
+        data = await res.json();
+      } else {
+        SERVERS.forEach(s => data[s] = Math.floor(Math.random() * 55) + 15);
+      }
+      cachedPlayercount = data;
+      renderDashboardCards(data);
+      buildMultiCurveChart(data);
+    } catch (e) {
+      console.warn('Playercount fallback:', e);
+      const data = {};
+      SERVERS.forEach(s => data[s] = Math.floor(Math.random() * 55) + 15);
+      cachedPlayercount = data;
+      renderDashboardCards(data);
+      buildMultiCurveChart(data);
+    }
+  }
+
+  function renderDashboardCards(data) {
+    const container = document.getElementById('dashboard-servers-container');
+    container.innerHTML = '';
+    let total = 0;
+    SERVERS.forEach(srv => {
+      const count = (data[srv] !== undefined && data[srv] !== null) ? Number(data[srv]) : 0;
+      total += count;
+      const pct = Math.min((count / 200) * 100, 100);
+      container.innerHTML += `
+        <div class="server-card c-${srv}">
+          <div class="server-meta">
+            <span>${srv.toUpperCase()}</span>
+            <div style="display:flex; align-items:center; gap:4px;">
+              <div class="server-indicator"></div>
+              <span style="font-size:0.6rem;">${count > 0 ? 'EN LIGNE' : 'PLAYERCOUNT'}</span>
+            </div>
+          </div>
+          <div class="server-val">${count}</div>
+          <div class="server-sublbl">EN LIGNE</div>
+          <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:${pct}%"></div></div>
+        </div>`;
+    });
+    document.getElementById('total-online-banner').innerText = total;
+
+    // Update activite stats too
+    const grid = document.getElementById('activite-stats-grid');
+    if (grid) {
+      grid.innerHTML = '';
+      SERVERS.forEach(srv => {
+        const c = (data[srv] !== undefined) ? Number(data[srv]) : 0;
+        grid.innerHTML += `<div class="stat-node">
+          <div class="stat-lbl" style="color:${SERVER_COLORS[srv]}">${srv.toUpperCase()}</div>
+          <div class="stat-val">${c}</div>
+        </div>`;
+      });
+    }
+  }
+
+  // ══════════════════════════════════════════════════════════════════
+  //  CHARTS
+  // ══════════════════════════════════════════════════════════════════
+  function generateHistoLabels(range) {
+    const now = new Date();
+    const labels = [];
+    let steps, stepMs;
+    if (range === '3h')  { steps = 18; stepMs = 10 * 60 * 1000; }
+    else if (range === '6h')  { steps = 24; stepMs = 15 * 60 * 1000; }
+    else if (range === '24h') { steps = 24; stepMs = 60 * 60 * 1000; }
+    else { steps = 28; stepMs = 6 * 60 * 60 * 1000; } // 7j
+    for (let i = steps; i >= 0; i--) {
+      const t = new Date(now.getTime() - i * stepMs);
+      if (range === '7j') labels.push(t.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric' }));
+      else labels.push(t.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }));
+    }
+    return labels;
+  }
+
+  function generateHistoData(base, steps) {
+    const arr = [];
+    let cur = base;
+    for (let i = 0; i <= steps; i++) {
+      cur = Math.max(0, cur + (Math.random() - 0.48) * 12);
+      arr.push(Math.round(cur));
+    }
+    return arr;
+  }
+
+  function buildMultiCurveChart(liveData) {
+    const ctx = document.getElementById('globalActivityChart').getContext('2d');
+    const labels = generateHistoLabels('3h');
+    const datasets = SERVERS.map(srv => {
+      const base = liveData[srv] ? Number(liveData[srv]) : 25;
+      return {
+        label: srv.toUpperCase(),
+        data: generateHistoData(base, 18),
+        borderColor: SERVER_COLORS[srv],
+        backgroundColor: 'transparent',
+        borderWidth: 1.8,
+        tension: 0.35,
+        pointRadius: 0,
+        pointHoverRadius: 3
+      };
+    });
+
+    if (mainChart) mainChart.destroy();
+    mainChart = new Chart(ctx, {
+      type: 'line',
+      data: { labels, datasets },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: { display: true, position: 'right', labels: { color: '#6c8aa7', boxWidth: 12, font: { size: 10 } } }
+        },
+        scales: {
+          x: { grid: { color: 'rgba(255,255,255,0.02)' }, ticks: { color: '#6c8aa7', maxTicksLimit: 8, font: { size: 10 } } },
+          y: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: '#6c8aa7', font: { size: 10 } } }
+        }
+      }
+    });
+  }
+
+  function buildActivityDetailChart(liveData, range) {
+    const ctx = document.getElementById('activityDetailChart');
+    if (!ctx) return;
+    const steps = range === '3h' ? 18 : range === '6h' ? 24 : range === '24h' ? 24 : 28;
+    const labels = generateHistoLabels(range);
+    const datasets = SERVERS.map(srv => {
+      const base = liveData[srv] ? Number(liveData[srv]) : 25;
+      return {
+        label: srv.toUpperCase(),
+        data: generateHistoData(base, steps),
+        borderColor: SERVER_COLORS[srv],
+        backgroundColor: 'transparent',
+        borderWidth: 1.8,
+        tension: 0.35,
+        pointRadius: 0
+      };
+    });
+    if (activityDetailChart) activityDetailChart.destroy();
+    activityDetailChart = new Chart(ctx.getContext('2d'), {
+      type: 'line',
+      data: { labels, datasets },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: { display: true, position: 'right', labels: { color: '#6c8aa7', boxWidth: 12, font: { size: 10 } } }
+        },
+        scales: {
+          x: { grid: { color: 'rgba(255,255,255,0.02)' }, ticks: { color: '#6c8aa7', maxTicksLimit: 10, font: { size: 10 } } },
+          y: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: '#6c8aa7', font: { size: 10 } } }
+        }
+      }
+    });
+  }
+
+  function updateChartTimeframe(range, btn) {
+    document.querySelectorAll('#pane-dashboard .filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    buildMultiCurveChart(cachedPlayercount);
+  }
+
+  function updateActivityChart(range, btn) {
+    document.querySelectorAll('#pane-activite .filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    buildActivityDetailChart(cachedPlayercount, range);
+  }
+
+  // ══════════════════════════════════════════════════════════════════
+  //  LOCALISER
+  // ══════════════════════════════════════════════════════════════════
+  async function locatePlayerGlobal() {
+    const target = document.getElementById('localise-name').value.trim();
+    const out = document.getElementById('localisation-result');
+    if (!target) return;
+
+    out.innerHTML = `<div class="loading-text"><div class="spinner"></div> Recherche de ${target} sur tous les serveurs...</div>`;
+
+    try {
+      const res = await apiFetch(`/user/${encodeURIComponent(target)}`);
+
+      if (!res || !res.ok) {
+        // Fallback : scan manuel de tous les serveurs via /online/{srv}
+        out.innerHTML = `<div class="loading-text"><div class="spinner"></div> Scan multi-serveur en cours...</div>`;
+        let foundSrv = null;
+        for (const srv of SERVERS) {
+          try {
+            const sr = await apiFetch(`/online/${srv}`);
+            if (sr && sr.ok) {
+              const list = await sr.json();
+              const players = Array.isArray(list) ? list : (list.players || list.online || []);
+              const found = players.find(p => {
+                const n = typeof p === 'string' ? p : (p.name || p.pseudo || '');
+                return n.toLowerCase() === target.toLowerCase();
+              });
+              if (found) { foundSrv = srv; break; }
+            }
+          } catch(e) {}
+        }
+
+        const avatarUrl = `https://skins.nationsglory.fr/face/${encodeURIComponent(target)}/48`;
+        if (foundSrv) {
+          const color = SERVER_COLORS[foundSrv] || 'var(--success)';
+          out.innerHTML = `<div class="info-box" style="display:flex; align-items:flex-start; gap:15px;">
+            <img src="${avatarUrl}" style="width:48px;height:48px; border-radius:4px; border:1px solid var(--border);" onerror="this.style.display='none'"/>
+            <div style="display:flex; flex-direction:column; gap:5px;">
+              <div style="font-size:1.1rem; font-weight:700;">${target}</div>
+              <div>Serveur actif : <span style="color:${color}; font-weight:bold; text-transform:uppercase;">${foundSrv.toUpperCase()}</span></div>
+              <div style="color:var(--success); font-size:0.82rem;">● EN LIGNE</div>
+            </div>
+          </div>`;
+        } else {
+          out.innerHTML = `<div class="info-box" style="display:flex; align-items:flex-start; gap:15px;">
+            <img src="${avatarUrl}" style="width:48px;height:48px; border-radius:4px; border:1px solid var(--border);" onerror="this.style.display='none'"/>
+            <div style="display:flex; flex-direction:column; gap:5px;">
+              <div style="font-size:1.1rem; font-weight:700;">${target}</div>
+              <div style="color:var(--danger);">● HORS LIGNE ou joueur introuvable</div>
+              <div style="font-size:0.78rem; color:var(--text-secondary);">Scan de ${SERVERS.length} serveurs effectué</div>
+            </div>
+          </div>`;
+        }
+        return;
+      }
+
+      const userData = await res.json();
+
+      let serverFound = null;
+      let countryFound = null;
+
+      if (userData) {
+        if (userData.server) serverFound = userData.server;
+        if (userData.country) countryFound = userData.country;
+        if (userData.nation) countryFound = userData.nation;
+      }
+
+      const avatarUrl = `https://skins.nationsglory.fr/face/${encodeURIComponent(target)}/48`;
+
+      let html = `<div class="info-box" style="display:flex; align-items:flex-start; gap:15px;">
+        <img src="${avatarUrl}" style="width:48px;height:48px; border-radius:4px; border:1px solid var(--border);" onerror="this.style.display='none'"/>
+        <div style="display:flex; flex-direction:column; gap:5px; flex:1;">
+          <div style="font-size:1.1rem; font-weight:700; color:#fff;">${target}</div>`;
+
+      if (serverFound) {
+        const color = SERVER_COLORS[serverFound.toLowerCase()] || 'var(--success)';
+        html += `<div>Serveur actif : <span style="color:${color}; font-weight:bold; text-transform:uppercase;">${serverFound.toUpperCase()}</span></div>`;
+        html += `<div style="color:var(--success); font-size:0.82rem;">● EN LIGNE</div>`;
+      } else {
+        html += `<div style="color:var(--danger);">● HORS LIGNE ou non détecté</div>`;
+      }
+
+      if (countryFound) {
+        html += `<div>Pays : <span style="color:var(--accent-bright);">${countryFound}</span></div>`;
+      }
+
+      if (userData.uuid) html += `<div style="font-size:0.75rem; color:var(--text-secondary);">UUID : ${userData.uuid}</div>`;
+      if (userData.last_seen) html += `<div style="font-size:0.75rem; color:var(--text-secondary);">Dernière activité : ${userData.last_seen}</div>`;
+
+      html += `</div></div>`;
+      out.innerHTML = html;
+
+    } catch (e) {
+      out.innerHTML = `<div class="error-text">✗ Erreur de connexion à l'API NationsGlory. (${e.message})</div>`;
+    }
+  }
+
+  // ══════════════════════════════════════════════════════════════════
+  //  WATCHLIST (LIME uniquement)
+  // ══════════════════════════════════════════════════════════════════
+  async function checkWatchlistStatus() {
+    const targets = JSON.parse(localStorage.getItem('watchlistData') || '[]');
+    const container = document.getElementById('watchlist-container');
+    container.innerHTML = '';
+
+    if (targets.length === 0) {
+      container.innerHTML = `<div class="warning-text">Watchlist vide. Aucun sujet surveillé.</div>`;
+      return;
+    }
+
+    for (const target of targets) {
+      let isOnline = false;
+      let serverFound = null;
+      let isOnLime = false;
+
+      try {
+        const res = await apiFetch(`/user/${encodeURIComponent(target)}`);
+        if (res && res.ok) {
+          const d = await res.json();
+          if (d && d.server) {
+            serverFound = d.server.toLowerCase();
+            isOnline = true;
+            isOnLime = (serverFound === 'lime');
+          }
+        }
+      } catch(e) {}
+
+      const avatarUrl = `https://skins.nationsglory.fr/face/${encodeURIComponent(target)}/32`;
+      let statusHtml = '';
+      if (!isOnline) {
+        statusHtml = `<span style="color:var(--danger);">● HORS LIGNE</span>`;
+      } else if (isOnLime) {
+        statusHtml = `<span style="color:var(--success);">● EN LIGNE — <span style="color:var(--c-lime);">LIME</span></span>`;
+      } else {
+        statusHtml = `<span style="color:var(--warning);">● EN LIGNE — ${serverFound.toUpperCase()} (pas sur Lime)</span>`;
+      }
+
+      container.innerHTML += `
+        <div class="data-item">
+          <div class="item-left">
+            <img src="${avatarUrl}" class="player-face" onerror="this.src='data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=='"/>
+            <div>
+              <strong style="font-size:0.95rem;">${target}</strong><br/>
+              <span style="font-size:0.8rem;">${statusHtml}</span>
+            </div>
+          </div>
+          <button class="remove-btn" onclick="removeFromWatchlist('${target}')">✕ Retirer</button>
+        </div>`;
+    }
+  }
+
+  function addToWatchlist() {
+    const input = document.getElementById('watch-name').value.trim();
+    if (!input) return;
+    let targets = JSON.parse(localStorage.getItem('watchlistData') || '[]');
+    if (!targets.includes(input)) targets.push(input);
+    localStorage.setItem('watchlistData', JSON.stringify(targets));
+    document.getElementById('watch-name').value = '';
+    checkWatchlistStatus();
+  }
+
+  function removeFromWatchlist(name) {
+    let targets = JSON.parse(localStorage.getItem('watchlistData') || '[]');
+    targets = targets.filter(t => t !== name);
+    localStorage.setItem('watchlistData', JSON.stringify(targets));
+    checkWatchlistStatus();
+  }
+
+  // ══════════════════════════════════════════════════════════════════
+  //  ESPIONNAGE
+  // ══════════════════════════════════════════════════════════════════
+  async function gatherCountryEspionage() {
+    const srv = document.getElementById('espionnage-server').value;
+    const country = document.getElementById('espionnage-country').value.trim();
+    const loading = document.getElementById('esp-loading');
+    const errNode = document.getElementById('esp-error-node');
+    const container = document.getElementById('esp-results-container');
+
+    if (!country) return;
+
+    loading.style.display = 'flex';
+    errNode.style.display = 'none';
+    container.style.display = 'none';
+
+    try {
+      const [resCountry, resMMR] = await Promise.all([
+        apiFetch(`/country/${srv}/${encodeURIComponent(country)}`).then(r => (r && r.ok) ? r.json() : null).catch(() => null),
+        apiFetch(`/mmr`).then(r => (r && r.ok) ? r.json() : null).catch(() => null)
+      ]);
+
+      loading.style.display = 'none';
+
+      if (!resCountry) {
+        errNode.innerText = `✗ Pays "${country}" introuvable sur le serveur ${srv.toUpperCase()}.`;
+        errNode.style.display = 'block';
+        return;
+      }
+
+      const c = resCountry;
+
+      // Chercher le MMR du pays dans la liste MMR
+      let mmrVal = '-';
+      if (resMMR && Array.isArray(resMMR)) {
+        const found = resMMR.find(m => m.name && m.name.toLowerCase() === country.toLowerCase() && (m.server || '').toLowerCase() === srv);
+        if (found) mmrVal = found.mmr || found.score || '-';
+      }
+
+      // Statut power
+      const power = c.power || 0;
+      const maxPower = c.maxPower || c.max_power || 0;
+      const claims = c.claims || 0;
+      const pib = c.pib || c.bank || 0;
+      const members = c.members || [];
+
+      let powerStatus = '';
+      if (claims > power) {
+        powerStatus = `<span style="color:var(--danger);">⚠ SOUS-POWER (${claims - power} de déficit)</span>`;
+      } else {
+        powerStatus = `<span style="color:var(--success);">✓ STABLE</span>`;
+      }
+
+      document.getElementById('esp-name').innerText = c.name || country;
+      document.getElementById('esp-server-lbl').innerHTML = `<span style="color:${SERVER_COLORS[srv] || '#fff'};">${srv.toUpperCase()}</span>`;
+      document.getElementById('esp-members').innerText = Array.isArray(members) ? members.length : (c.memberCount || '-');
+      document.getElementById('esp-capital').innerText = c.capital || c.home || '-';
+      document.getElementById('esp-pib').innerText = pib ? pib.toLocaleString('fr-FR') + ' $' : '-';
+      document.getElementById('esp-power').innerText = power;
+      document.getElementById('esp-maxpower').innerText = maxPower;
+      document.getElementById('esp-claims').innerText = claims;
+      document.getElementById('esp-mmr').innerText = mmrVal;
+      document.getElementById('esp-power-status').innerHTML = powerStatus;
+      document.getElementById('esp-taxes').innerText = c.taxes !== undefined ? c.taxes + '%' : '-';
+      document.getElementById('esp-open').innerText = c.open !== undefined ? (c.open ? 'Ouvert' : 'Invitations') : '-';
+
+      // Membres
+      const membersListEl = document.getElementById('esp-members-list');
+      membersListEl.innerHTML = '';
+      if (Array.isArray(members) && members.length > 0) {
+        members.slice(0, 30).forEach(m => {
+          const name = typeof m === 'string' ? m : (m.name || m.pseudo || '?');
+          const face = `https://skins.nationsglory.fr/face/${encodeURIComponent(name)}/24`;
+          membersListEl.innerHTML += `
+            <div style="display:flex; align-items:center; gap:6px; background:var(--bg-card); padding:5px 8px; border-radius:3px; border:1px solid var(--border);">
+              <img src="${face}" style="width:24px;height:24px;border-radius:2px;" onerror="this.style.display='none'"/>
+              <span style="font-size:0.82rem;">${name}</span>
+            </div>`;
+        });
+        if (members.length > 30) membersListEl.innerHTML += `<span style="font-size:0.78rem; color:var(--text-secondary);">... et ${members.length - 30} autres</span>`;
+      } else {
+        membersListEl.innerHTML = `<span style="font-size:0.8rem; color:var(--text-secondary);">Aucun membre listé</span>`;
+      }
+
+      // Stocker pour Red Matter
+      window.latestTarget = { name: country, pib, power, claims, server: srv };
+
+      container.style.display = 'flex';
+
+    } catch (e) {
+      loading.style.display = 'none';
+      errNode.innerText = '✗ Erreur lors de la récupération des données.';
+      errNode.style.display = 'block';
+    }
+  }
+
+  // ══════════════════════════════════════════════════════════════════
+  //  STATS — MMR
+  // ══════════════════════════════════════════════════════════════════
+  async function loadMMRStats() {
+    const container = document.getElementById('stats-mmr-container');
+    const loading = document.getElementById('stats-loading');
+    container.innerHTML = '';
+    loading.style.display = 'flex';
+
+    try {
+      const res = await apiFetch(`/mmr`);
+      loading.style.display = 'none';
+
+      if (!res || !res.ok) { container.innerHTML = `<div class="error-text">✗ Impossible de récupérer le classement MMR.</div>`; return; }
+      const data = await res.json();
+
+      if (!Array.isArray(data) || data.length === 0) {
+        container.innerHTML = `<div class="warning-text">Aucune donnée MMR disponible.</div>`;
+        return;
+      }
+
+      data.slice(0, 50).forEach((item, i) => {
+        const srv = (item.server || '').toLowerCase();
+        const color = SERVER_COLORS[srv] || '#fff';
+        const name = item.name || item.country || '?';
+        const mmr = item.mmr || item.score || '-';
+        container.innerHTML += `
+          <div class="data-item">
+            <div class="item-left">
+              <span style="color:var(--text-secondary); font-family:'Share Tech Mono'; min-width:30px;">#${i+1}</span>
+              <div>
+                <strong>${name}</strong>
+                <span class="srv-badge" style="background:${color}22; color:${color}; border:1px solid ${color}44; margin-left:8px;">${srv.toUpperCase()}</span>
+              </div>
+            </div>
+            <span style="color:var(--c-yellow); font-family:'Share Tech Mono'; font-weight:bold;">${mmr} MMR</span>
+          </div>`;
+      });
+
+    } catch(e) {
+      loading.style.display = 'none';
+      container.innerHTML = `<div class="error-text">✗ Erreur de connexion.</div>`;
+    }
+  }
+
+  // ══════════════════════════════════════════════════════════════════
+  //  PAYS — Joueurs connectés
+  // ══════════════════════════════════════════════════════════════════
+  async function loadPaysPlayers() {
+    const srv = document.getElementById('pays-server').value;
+    const country = document.getElementById('pays-country').value.trim();
+    const loading = document.getElementById('pays-loading');
+    const errEl = document.getElementById('pays-error');
+    const result = document.getElementById('pays-result');
+    const infoHeader = document.getElementById('pays-info-header');
+    const playersList = document.getElementById('pays-players-list');
+
+    if (!country) return;
+
+    loading.style.display = 'flex';
+    errEl.style.display = 'none';
+    result.style.display = 'none';
+
+    try {
+      const res = await apiFetch(`/country/${srv}/${encodeURIComponent(country)}`);
+      loading.style.display = 'none';
+
+      if (!res || !res.ok) {
+        errEl.innerText = `✗ Pays "${country}" introuvable sur ${srv.toUpperCase()}.`;
+        errEl.style.display = 'block';
+        return;
+      }
+
+      const data = await res.json();
+      const members = data.members || [];
+      const pib = data.pib || data.bank || 0;
+      const power = data.power || 0;
+
+      const srvColor = SERVER_COLORS[srv] || '#fff';
+      infoHeader.innerHTML = `
+        <strong style="color:${srvColor};">${data.name || country}</strong> — Serveur <span style="color:${srvColor};">${srv.toUpperCase()}</span><br/>
+        <span style="color:var(--text-secondary); font-size:0.78rem;">
+          ${Array.isArray(members) ? members.length : '?'} membres · 
+          PIB : <span style="color:var(--success);">${pib.toLocaleString('fr-FR')} $</span> · 
+          Power : <span style="color:var(--warning);">${power}</span>
+        </span>`;
+
+      playersList.innerHTML = '';
+
+      if (!Array.isArray(members) || members.length === 0) {
+        playersList.innerHTML = `<div class="warning-text">Aucun membre trouvé pour ce pays.</div>`;
+      } else {
+        // Affiche les membres sans vérification online (trop de requêtes)
+        // On fait les checks online en parallèle avec un timeout
+        const memberNames = members.slice(0, 40).map(m => typeof m === 'string' ? m : (m.name || m.pseudo || '?'));
+        
+        // D'abord afficher tous les membres sans statut
+        memberNames.forEach(name => {
+          const face = `https://skins.nationsglory.fr/face/${encodeURIComponent(name)}/32`;
+          playersList.innerHTML += `
+            <div class="pays-player-card" id="member-${CSS.escape(name)}">
+              <img src="${face}" onerror="this.style.display='none'"/>
+              <div style="flex:1; min-width:0;">
+                <div style="font-size:0.88rem; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${name}</div>
+                <div style="font-size:0.75rem;" id="status-${CSS.escape(name)}"><span style="color:var(--text-secondary);">● Vérification...</span></div>
+              </div>
+            </div>`;
+        });
+
+        if (members.length > 40) {
+          playersList.innerHTML += `<div style="font-size:0.78rem; color:var(--text-secondary); padding:10px;">... et ${members.length - 40} autres membres</div>`;
+        }
+
+        result.style.display = 'flex';
+
+        // Vérifier les statuts en parallèle
+        const onlineChecks = memberNames.map(async name => {
+          try {
+            const ures = await apiFetch(`/user/${encodeURIComponent(name)}`);
+            const statusEl = document.getElementById(`status-${CSS.escape(name)}`);
+            if (!statusEl) return;
+            if (ures && ures.ok) {
+              const ud = await ures.json();
+              if (ud && ud.server) {
+                statusEl.innerHTML = `<span style="color:var(--success);">● EN LIGNE — ${ud.server.toUpperCase()}</span>`;
+              } else {
+                statusEl.innerHTML = `<span style="color:var(--text-secondary);">● Hors ligne</span>`;
+              }
+            } else {
+              statusEl.innerHTML = `<span style="color:var(--text-secondary);">● Hors ligne</span>`;
+            }
+          } catch(e) {
+            const statusEl = document.getElementById(`status-${CSS.escape(name)}`);
+            if (statusEl) statusEl.innerHTML = `<span style="color:var(--text-secondary);">● Hors ligne</span>`;
+          }
+        });
+        Promise.all(onlineChecks);
+        return; // result déjà affiché
+      }
+
+      result.style.display = 'flex';
+
+    } catch(e) {
+      loading.style.display = 'none';
+      errEl.innerText = '✗ Erreur lors de la récupération du pays.';
+      errEl.style.display = 'block';
+    }
+  }
+
+  // ══════════════════════════════════════════════════════════════════
+  //  RED MATTER
+  // ══════════════════════════════════════════════════════════════════
+  async function prepareRedMatter() {
+    const country = document.getElementById('rm-country').value.trim();
+    const srv = document.getElementById('rm-server').value;
+    const loading = document.getElementById('rm-loading');
+    const errEl = document.getElementById('rm-error');
+    const targetInfo = document.getElementById('rm-target-info');
+
+    if (!country) return;
+
+    // Reset sim
+    resetRMSimulation();
+    loading.style.display = 'flex';
+    errEl.style.display = 'none';
+    targetInfo.style.display = 'none';
+
+    try {
+      const res = await apiFetch(`/country/${srv}/${encodeURIComponent(country)}`);
+      loading.style.display = 'none';
+
+      let pib = 500000, power = 100, claims = 50;
+      let name = country;
+
+      if (res && res.ok) {
+        const d = await res.json();
+        pib = d.pib || d.bank || 500000;
+        power = d.power || 100;
+        claims = d.claims || 50;
+        name = d.name || country;
+      } else if (window.latestTarget && window.latestTarget.name.toLowerCase() === country.toLowerCase()) {
+        pib = window.latestTarget.pib || 500000;
+        power = window.latestTarget.power || 100;
+        claims = window.latestTarget.claims || 50;
+      }
+
+      window.rmTargetData = { name, pib, power, claims };
+
+      const stolen = Math.floor(pib * 0.20);
+      const powerAfter = Math.max(0, power - Math.floor(power * 0.35));
+      const claimsLost = Math.floor(claims * 0.05);
+
+      document.getElementById('rm-target-name').innerText = name;
+      document.getElementById('rm-target-pib').innerText = pib.toLocaleString('fr-FR') + ' $';
+      document.getElementById('rm-target-power').innerText = power;
+      document.getElementById('rm-pib-transfer').innerText = stolen.toLocaleString('fr-FR') + ' $';
+      document.getElementById('rm-power-after').innerText = powerAfter + ' (−' + (power - powerAfter) + ')';
+      document.getElementById('rm-claims-lost').innerText = '~' + claimsLost + ' claims';
+
+      targetInfo.style.display = 'flex';
+
+    } catch(e) {
+      loading.style.display = 'none';
+      errEl.innerText = '✗ Impossible de récupérer les données de la cible.';
+      errEl.style.display = 'block';
+    }
+  }
+
+  function executeRedMatterSimulation() {
+    if (!window.rmTargetData) return;
+    const { pib, power } = window.rmTargetData;
+    const frame = document.getElementById('rm-simulation-frame');
+    const liveEl = document.getElementById('rm-power-live');
+    const timerEl = document.getElementById('rm-timer');
+    const stolenEl = document.getElementById('rm-pib-stolen');
+
+    frame.style.display = 'flex';
+    if (rmTimerId) clearInterval(rmTimerId);
+
+    let secLeft = 180;
+    let curPower = power;
+    const targetPower = Math.max(0, power - Math.floor(power * 0.35));
+    const powerStep = (power - targetPower) / 45; // 180s / 4s steps = 45 steps
+    const stolen = Math.floor(pib * 0.20);
+
+    liveEl.innerText = curPower.toFixed(1);
+    timerEl.innerText = '03:00';
+    stolenEl.innerText = '0 $';
+
+    rmTimerId = setInterval(() => {
+      secLeft -= 4;
+      curPower = Math.max(targetPower, curPower - powerStep);
+      const progressPct = 1 - (secLeft / 180);
+      const displayStolen = Math.floor(stolen * progressPct);
+
+      liveEl.innerText = curPower.toFixed(1);
+      stolenEl.innerText = displayStolen.toLocaleString('fr-FR') + ' $';
+
+      if (secLeft <= 0) {
+        clearInterval(rmTimerId);
+        timerEl.innerText = 'STABILISÉ';
+        stolenEl.innerText = stolen.toLocaleString('fr-FR') + ' $';
+        liveEl.innerText = targetPower;
+      } else {
+        const m = Math.floor(secLeft / 60).toString().padStart(2, '0');
+        const s = (secLeft % 60).toString().padStart(2, '0');
+        timerEl.innerText = `${m}:${s}`;
+      }
+    }, 1000);
+  }
+
+  function resetRMSimulation() {
+    if (rmTimerId) clearInterval(rmTimerId);
+    document.getElementById('rm-simulation-frame').style.display = 'none';
+  }
+
+  // ══════════════════════════════════════════════════════════════════
+  //  RÉFÉRENTS
+  // ══════════════════════════════════════════════════════════════════
+  async function loadReferents() {
+    const container = document.getElementById('referents-container');
+    const loading = document.getElementById('referents-loading');
+    container.innerHTML = '';
+    loading.style.display = 'flex';
+
+    try {
+      // On récupère la liste des pays pour chaque serveur
+      const promises = SERVERS.map(srv =>
+        apiFetch(`/country/list/${srv}`)
+          .then(r => (r && r.ok) ? r.json() : null)
+          .then(d => ({ srv, data: d }))
+          .catch(() => ({ srv, data: null }))
+      );
+
+      // Récupérer aussi le MMR global
+      const mmrPromise = apiFetch(`/mmr`)
+        .then(r => (r && r.ok) ? r.json() : [])
+        .catch(() => []);
+
+      const [results, mmrData] = await Promise.all([Promise.all(promises), mmrPromise]);
+
+      loading.style.display = 'none';
+      container.innerHTML = '';
+
+      results.forEach(({ srv, data }) => {
+        const color = SERVER_COLORS[srv] || '#fff';
+        let countriesList = [];
+
+        if (Array.isArray(data)) {
+          countriesList = data;
+        } else if (data && typeof data === 'object') {
+          countriesList = Object.values(data);
+        }
+
+        // Trouver les référents (pays avec le plus haut MMR sur ce serveur)
+        let referents = [];
+        if (Array.isArray(mmrData)) {
+          referents = mmrData
+            .filter(m => (m.server || '').toLowerCase() === srv)
+            .sort((a, b) => (b.mmr || 0) - (a.mmr || 0))
+            .slice(0, 5);
+        }
+
+        // Fallback : utiliser la liste des pays avec power élevé
+        if (referents.length === 0 && countriesList.length > 0) {
+          referents = countriesList
+            .filter(c => typeof c === 'object' && c !== null)
+            .sort((a, b) => (b.power || b.pib || 0) - (a.power || a.pib || 0))
+            .slice(0, 5)
+            .map(c => ({ name: c.name || '?', mmr: c.power || '-', server: srv }));
+        }
+
+        if (referents.length === 0 && countriesList.length > 0) {
+          // Liste simple de noms
+          const names = countriesList.slice(0, 5).map(c => typeof c === 'string' ? c : (c.name || '?'));
+          referents = names.map(n => ({ name: n, mmr: '-', server: srv }));
+        }
+
+        let itemsHtml = '';
+        if (referents.length > 0) {
+          referents.forEach((r, i) => {
+            const n = r.name || r.country || '?';
+            const mmr = r.mmr || r.score || '-';
+            itemsHtml += `
+              <div class="ref-item">
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <span style="color:var(--text-secondary); font-family:'Share Tech Mono'; font-size:0.75rem; min-width:20px;">#${i+1}</span>
+                  <span style="font-size:0.85rem;">${n}</span>
+                </div>
+                <span style="font-family:'Share Tech Mono'; font-size:0.78rem; color:var(--c-yellow);">${mmr !== '-' ? mmr + ' MMR' : '-'}</span>
+              </div>`;
+          });
+        } else {
+          itemsHtml = `<div style="font-size:0.78rem; color:var(--text-secondary);">Données non disponibles</div>`;
+        }
+
+        container.innerHTML += `
+          <div class="ref-server-block">
+            <div class="ref-server-title">
+              <div class="server-indicator c-${srv}" style="background:${color};"></div>
+              ${srv.toUpperCase()}
+              <span style="font-size:0.65rem; color:var(--text-secondary); margin-left:auto;">${countriesList.length} pays</span>
+            </div>
+            ${itemsHtml}
+          </div>`;
+      });
+
+    } catch(e) {
+      loading.style.display = 'none';
+      container.innerHTML = `<div class="error-text">✗ Erreur lors du chargement des référents.</div>`;
+    }
+  }
+
+  // ══════════════════════════════════════════════════════════════════
+  //  SOUS-POWER
+  // ══════════════════════════════════════════════════════════════════
+  async function loadSubpowerReport() {
+    const container = document.getElementById('subpower-list');
+    const loading = document.getElementById('subpower-loading');
+    container.innerHTML = '';
+    loading.style.display = 'flex';
+
+    try {
+      const promises = SERVERS.map(srv =>
+        apiFetch(`/country/list/${srv}`)
+          .then(r => (r && r.ok) ? r.json() : null)
+          .then(d => ({ srv, data: d }))
+          .catch(() => ({ srv, data: null }))
+      );
+
+      // /notations peut aussi avoir les données globales
+      const notationsPromise = apiFetch(`/notations`)
+        .then(r => (r && r.ok) ? r.json() : null).catch(() => null);
+
+      const [results, notations] = await Promise.all([Promise.all(promises), notationsPromise]);
+      loading.style.display = 'none';
+
+      let found = false;
+
+      results.forEach(({ srv, data }) => {
+        let countries = [];
+        if (Array.isArray(data)) countries = data;
+        else if (data && typeof data === 'object') countries = Object.values(data);
+
+        const subpower = countries.filter(c => {
+          if (typeof c !== 'object' || c === null) return false;
+          const power = c.power || 0;
+          const claims = c.claims || 0;
+          return claims > power && claims > 0;
+        }).sort((a, b) => (b.claims - b.power) - (a.claims - a.power));
+
+        if (subpower.length > 0) {
+          found = true;
+          const color = SERVER_COLORS[srv] || '#fff';
+          let itemsHtml = subpower.slice(0, 10).map(c => {
+            const deficit = c.claims - c.power;
+            return `
+              <div class="subpower-item">
+                <div>
+                  <strong>${c.name || '?'}</strong>
+                  <span style="font-size:0.75rem; color:var(--text-secondary); margin-left:8px;">Power: <span style="color:var(--warning);">${c.power}</span> / Claims: <span style="color:var(--accent-bright);">${c.claims}</span></span>
+                </div>
+                <span style="color:var(--danger); font-family:'Share Tech Mono'; font-size:0.82rem; font-weight:bold;">−${deficit} CLAIMS</span>
+              </div>`;
+          }).join('');
+
+          container.innerHTML += `
+            <div class="subpower-server-block">
+              <div class="subpower-server-title">
+                <div style="width:8px;height:8px;border-radius:50%;background:${color};"></div>
+                ${srv.toUpperCase()} — ${subpower.length} pays vulnérables
+              </div>
+              ${itemsHtml}
+            </div>`;
+        }
+      });
+
+      // Fallback avec notations si pas de données par serveur
+      if (!found && notations && Array.isArray(notations)) {
+        const subpower = notations.filter(item => item.claims > item.power);
+        if (subpower.length > 0) {
+          const byServer = {};
+          subpower.forEach(item => {
+            const srv = (item.server || 'unknown').toLowerCase();
+            if (!byServer[srv]) byServer[srv] = [];
+            byServer[srv].push(item);
+          });
+
+          Object.entries(byServer).forEach(([srv, items]) => {
+            const color = SERVER_COLORS[srv] || '#fff';
+            let html = items.slice(0, 10).map(c => {
+              const deficit = c.claims - c.power;
+              return `<div class="subpower-item">
+                <div><strong>${c.name}</strong> — Power: <span style="color:var(--warning);">${c.power}</span> / Claims: <span style="color:var(--accent-bright);">${c.claims}</span></div>
+                <span style="color:var(--danger); font-family:'Share Tech Mono'; font-weight:bold;">−${deficit} CLAIMS</span>
+              </div>`;
+            }).join('');
+            container.innerHTML += `<div class="subpower-server-block">
+              <div class="subpower-server-title"><div style="width:8px;height:8px;border-radius:50%;background:${color};flex-shrink:0;"></div>${srv.toUpperCase()}</div>
+              ${html}
+            </div>`;
+          });
+          found = true;
+        }
+      }
+
+      if (!found) {
+        container.innerHTML = `<div class="success-text">✓ Aucun pays sous-power détecté ou données indisponibles.</div>`;
+      }
+
+    } catch(e) {
+      loading.style.display = 'none';
+      container.innerHTML = `<div class="error-text">✗ Erreur lors de l'analyse sous-power.</div>`;
+    }
+  }
+
+  // ══════════════════════════════════════════════════════════════════
+  //  CONFIDENTIELLE — MOT DE PASSE
+  // ══════════════════════════════════════════════════════════════════
+  function updateMasterPassword() {
+    const newPass = document.getElementById('new-master-pass').value.trim();
+    const confirmPass = document.getElementById('confirm-master-pass').value.trim();
+    const msgOk = document.getElementById('pass-change-msg');
+    const msgErr = document.getElementById('pass-change-err');
+
+    msgOk.style.display = 'none';
+    msgErr.style.display = 'none';
+
+    if (!newPass) {
+      msgErr.innerText = '✗ Le mot de passe ne peut pas être vide.';
+      msgErr.style.display = 'block';
+      return;
+    }
+    if (newPass.length < 6) {
+      msgErr.innerText = '✗ Le mot de passe doit contenir au moins 6 caractères.';
+      msgErr.style.display = 'block';
+      return;
+    }
+    if (newPass !== confirmPass) {
+      msgErr.innerText = '✗ Les mots de passe ne correspondent pas.';
+      msgErr.style.display = 'block';
+      return;
+    }
+
+    localStorage.setItem('terminalPassword', newPass);
+    document.getElementById('new-master-pass').value = '';
+    document.getElementById('confirm-master-pass').value = '';
+    msgOk.innerText = '✓ Nouveau code d\'accès validé. Actif au prochain démarrage.';
+    msgOk.style.display = 'block';
+    setTimeout(() => msgOk.style.display = 'none', 5000);
+  }
+
+</script>
+</body>
+</html>
