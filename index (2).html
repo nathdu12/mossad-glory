@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MOSSAD GLORY — Intelligence Terminal V4</title>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --bg-primary:#020611;--bg-secondary:#040c1a;--bg-card:#051226;
+      --accent:#1e63bd;--accent-bright:#3ba0ff;--accent-glow:rgba(59,160,255,0.15);
+      --text-primary:#ffffff;--text-secondary:#6c8aa7;--border:rgba(59,160,255,0.12);
+      --success:#00ff88;--danger:#ff4d4d;--warning:#ffaa00;
+      --c-blue:#54a0ff;--c-coral:#ff5252;--c-orange:#ff9f43;--c-red:#ff4a4a;
+      --c-yellow:#feca57;--c-mocha:#a0785a;--c-white:#e0e0e0;--c-jade:#10ac84;
+      --c-lime:#00ff88;--c-cyan:#00d2d3;--c-black:#8899aa;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    html,body{height:100vh;font-family:'Rajdhani',sans-serif;background:var(--bg-primary);color:var(--text-primary);overflow:hidden;display:flex;flex-direction:column;}
+    #login-overlay{position:fixed;inset:0;z-index:9999;background:var(--bg-primary);display:flex;align-items:center;justify-content:center;flex-direction:column;}
+    .login-center-box{text-align:center;width:500px;display:flex;flex-direction:column;align-items:center;}
+    .login-title{font-size:3.6rem;font-weight:700;letter-spacing:20px;color:#fff;margin-bottom:6px;text-transform:uppercase;margin-left:20px;}
+    .login-subtitle{font-size:0.68rem;letter-spacing:5px;color:var(--text-secondary);margin-bottom:48px;text-transform:uppercase;}
+    .login-box{display:flex;flex-direction:column;gap:14px;width:320px;}
+    .login-label-top{font-size:0.72rem;letter-spacing:3px;color:var(--text-secondary);text-transform:uppercase;margin-bottom:6px;}
+    .login-box input{width:100%;padding:13px;background:#040c1a;border:1px solid rgba(56,139,253,0.25);border-radius:4px;color:#fff;font-family:'Share Tech Mono',monospace;font-size:1.05rem;outline:none;text-align:center;letter-spacing:2px;transition:border-color 0.2s;}
+    .login-box input:focus{border-color:#388bfd;}
+    .login-btn{width:100%;padding:13px;border:none;border-radius:4px;background:#155cb4;color:#fff;font-family:inherit;font-weight:700;font-size:0.82rem;cursor:pointer;letter-spacing:3px;text-transform:uppercase;display:flex;align-items:center;justify-content:center;gap:8px;transition:background 0.2s;}
+    .login-btn:hover{background:#388bfd;}
+    .login-error{color:var(--danger);font-size:0.82rem;margin-top:13px;font-family:'Share Tech Mono',monospace;min-height:20px;}
+    header{background:var(--bg-secondary);border-bottom:1px solid var(--border);padding:0 25px;display:flex;align-items:center;justify-content:space-between;font-size:0.83rem;height:58px;flex-shrink:0;}
+    .header-section{display:flex;align-items:center;gap:22px;}
+    .brand-title{font-size:1.35rem;font-weight:700;letter-spacing:2px;color:#fff;}
+    .brand-subtitle{font-size:0.7rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:1px;}
+    .sys-widget{background:rgba(6,19,41,0.8);border:1px solid var(--border);padding:5px 11px;border-radius:4px;display:flex;align-items:center;gap:7px;font-family:'Share Tech Mono',monospace;font-size:0.78rem;}
+    .dot-status{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+    .dot-online{background:var(--success);box-shadow:0 0 8px var(--success);}
+    @keyframes blink{0%,100%{opacity:1;}50%{opacity:0.3;}}
+    .main-nav{background:var(--bg-primary);border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;padding:0 25px;height:44px;flex-shrink:0;overflow-x:auto;}
+    .tabs-container{display:flex;gap:3px;height:100%;flex-shrink:0;}
+    .tab-item{display:flex;align-items:center;padding:0 16px;color:var(--text-secondary);cursor:pointer;font-size:0.82rem;font-weight:600;text-transform:uppercase;border-bottom:2px solid transparent;transition:all 0.18s;white-space:nowrap;}
+    .tab-item:hover,.tab-item.active{color:var(--accent-bright);background:rgba(59,160,255,0.03);border-bottom-color:var(--accent-bright);}
+    .tab-item.tab-warn{color:var(--warning);}
+    .tab-item.tab-warn.active,.tab-item.tab-warn:hover{color:var(--warning);border-bottom-color:var(--warning);}
+    #app-viewport{flex:1;padding:22px 25px;display:flex;flex-direction:column;overflow-y:auto;min-height:0;}
+    #app-viewport::-webkit-scrollbar{width:5px;}
+    #app-viewport::-webkit-scrollbar-track{background:transparent;}
+    #app-viewport::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+    .page-wrapper{display:none;flex-direction:column;gap:18px;width:100%;}
+    .page-wrapper.active{display:flex;}
+    .dashboard-layout{display:grid;grid-template-columns:1.2fr 1fr;gap:22px;}
+    .servers-panel-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:13px;}
+    .server-card{background:var(--bg-card);border:1px solid var(--border);border-radius:4px;padding:15px;position:relative;transition:border-color 0.2s;}
+    .server-card:hover{border-color:rgba(59,160,255,0.3);}
+    .server-meta{display:flex;justify-content:space-between;font-size:0.68rem;color:var(--text-secondary);font-weight:700;margin-bottom:5px;letter-spacing:0.5px;}
+    .server-val{font-size:2rem;font-weight:700;margin-bottom:4px;line-height:1;}
+    .server-sublbl{font-size:0.62rem;color:var(--text-secondary);text-transform:uppercase;margin-bottom:8px;letter-spacing:0.5px;}
+    .progress-bar-bg{height:3px;background:rgba(255,255,255,0.05);border-radius:2px;overflow:hidden;}
+    .progress-bar-fill{height:100%;border-radius:2px;transition:width 0.5s ease;}
+    .server-indicator{width:8px;height:8px;border-radius:50%;}
+    .c-lime .progress-bar-fill,.c-lime .server-indicator{background:var(--c-lime);}
+    .c-blue .progress-bar-fill,.c-blue .server-indicator{background:var(--c-blue);}
+    .c-coral .progress-bar-fill,.c-coral .server-indicator{background:var(--c-coral);}
+    .c-cyan .progress-bar-fill,.c-cyan .server-indicator{background:var(--c-cyan);}
+    .c-mocha .progress-bar-fill,.c-mocha .server-indicator{background:var(--c-mocha);}
+    .c-red .progress-bar-fill,.c-red .server-indicator{background:var(--c-red);}
+    .c-orange .progress-bar-fill,.c-orange .server-indicator{background:var(--c-orange);}
+    .c-yellow .progress-bar-fill,.c-yellow .server-indicator{background:var(--c-yellow);}
+    .c-white .progress-bar-fill,.c-white .server-indicator{background:var(--c-white);}
+    .c-black .progress-bar-fill,.c-black .server-indicator{background:var(--c-black);}
+    .c-jade .progress-bar-fill,.c-jade .server-indicator{background:var(--c-jade);}
+    .panel-box{background:var(--bg-card);border:1px solid var(--border);border-radius:4px;padding:20px;display:flex;flex-direction:column;gap:14px;}
+    .panel-title-bar{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);padding-bottom:11px;}
+    .panel-title{font-size:0.88rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#fff;}
+    .time-filters{display:flex;gap:5px;}
+    .filter-btn{padding:4px 13px;background:rgba(255,255,255,0.03);border:1px solid var(--border);color:var(--text-secondary);font-family:'Share Tech Mono',monospace;font-size:0.72rem;cursor:pointer;border-radius:3px;transition:all 0.15s;}
+    .filter-btn.active,.filter-btn:hover{background:var(--accent);color:#fff;border-color:var(--accent-bright);}
+    .search-group{display:flex;gap:10px;flex-wrap:wrap;}
+    .form-input{flex:1;min-width:120px;padding:11px 14px;background:var(--bg-primary);border:1px solid var(--border);border-radius:4px;color:#fff;font-family:inherit;font-size:0.92rem;outline:none;transition:border-color 0.2s;}
+    .form-input:focus{border-color:var(--accent-bright);}
+    .form-select{padding:11px 14px;background:var(--bg-primary);border:1px solid var(--border);border-radius:4px;color:#fff;font-family:inherit;font-size:0.9rem;outline:none;cursor:pointer;}
+    .action-btn{padding:0 22px;height:44px;background:#155cb4;border:none;border-radius:4px;color:#fff;font-family:inherit;font-weight:700;cursor:pointer;text-transform:uppercase;font-size:0.78rem;letter-spacing:1px;white-space:nowrap;transition:background 0.18s;}
+    .action-btn:hover{background:#388bfd;}
+    .action-btn.danger{background:#8b1515;}
+    .action-btn.danger:hover{background:var(--danger);}
+    .data-list{display:flex;flex-direction:column;gap:9px;max-height:420px;overflow-y:auto;}
+    .data-list::-webkit-scrollbar{width:4px;}
+    .data-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+    .data-item{background:rgba(255,255,255,0.01);border:1px solid var(--border);padding:13px 16px;border-radius:4px;display:flex;justify-content:space-between;align-items:center;gap:10px;}
+    .item-left{display:flex;align-items:center;gap:13px;}
+    .player-face{width:32px;height:32px;background:#040c1a;border-radius:4px;border:1px solid var(--border);object-fit:cover;}
+    .remove-btn{background:none;border:1px solid rgba(255,77,77,0.3);color:var(--danger);cursor:pointer;font-weight:700;text-transform:uppercase;font-size:0.7rem;padding:4px 9px;border-radius:3px;transition:all 0.15s;}
+    .remove-btn:hover{background:rgba(255,77,77,0.1);}
+    .grid-stats-box{display:grid;grid-template-columns:repeat(3,1fr);gap:13px;}
+    .grid-stats-box.cols2{grid-template-columns:repeat(2,1fr);}
+    .grid-stats-box.cols4{grid-template-columns:repeat(4,1fr);}
+    .stat-node{background:var(--bg-primary);padding:15px;border-radius:4px;border:1px solid var(--border);display:flex;flex-direction:column;gap:5px;}
+    .stat-lbl{font-size:0.68rem;text-transform:uppercase;color:var(--text-secondary);font-weight:600;letter-spacing:0.5px;}
+    .stat-val{font-size:1.2rem;font-weight:700;word-break:break-all;}
+    .sim-alert{border:1px solid var(--danger);background:rgba(255,77,77,0.04);color:var(--danger);padding:11px 14px;border-radius:4px;font-family:'Share Tech Mono',monospace;text-align:center;font-weight:bold;font-size:0.82rem;letter-spacing:1px;}
+    .info-box{border:1px solid var(--accent);background:rgba(59,160,255,0.04);padding:14px;border-radius:4px;font-family:'Share Tech Mono',monospace;font-size:0.82rem;line-height:1.6;}
+    .error-text{color:var(--danger);font-family:'Share Tech Mono',monospace;font-size:0.9rem;margin-top:4px;}
+    .success-text{color:var(--success);font-family:'Share Tech Mono',monospace;font-size:0.9rem;}
+    .warning-text{color:var(--warning);font-family:'Share Tech Mono',monospace;font-size:0.82rem;}
+    .loading-text{color:var(--warning);font-family:'Share Tech Mono',monospace;font-size:0.82rem;display:flex;align-items:center;gap:8px;}
+    .spinner{display:inline-block;width:12px;height:12px;border:2px solid rgba(255,170,0,0.3);border-top-color:var(--warning);border-radius:50%;animation:spin 0.8s linear infinite;}
+    @keyframes spin{to{transform:rotate(360deg);}}
+    .section-header{font-size:0.78rem;color:var(--text-secondary);margin-bottom:12px;text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid var(--border);padding-bottom:8px;}
+    .srv-badge{display:inline-block;padding:2px 8px;border-radius:3px;font-size:0.7rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;font-family:'Share Tech Mono',monospace;}
+    .ref-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;}
+    .ref-server-block{background:var(--bg-primary);border:1px solid var(--border);border-radius:4px;padding:15px;}
+    .ref-server-title{font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:2px;margin-bottom:11px;padding-bottom:8px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;}
+    .ref-item{padding:7px 0;border-bottom:1px solid rgba(59,160,255,0.06);font-size:0.85rem;display:flex;justify-content:space-between;align-items:center;}
+    .ref-item:last-child{border-bottom:none;}
+    .subpower-server-block{background:var(--bg-primary);border:1px solid var(--border);border-radius:4px;padding:15px;margin-bottom:12px;}
+    .subpower-server-title{font-size:0.76rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+    .subpower-item{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(59,160,255,0.06);font-size:0.85rem;}
+    .subpower-item:last-child{border-bottom:none;}
+    .pays-player-card{background:var(--bg-primary);border:1px solid var(--border);border-radius:4px;padding:11px 14px;display:flex;align-items:center;gap:12px;}
+    .pays-player-card img{width:28px;height:28px;border-radius:3px;border:1px solid var(--border);}
+    .online-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--success);box-shadow:0 0 6px var(--success);margin-right:4px;animation:pdot 2s infinite;}
+    @keyframes pdot{0%,100%{opacity:1;}50%{opacity:0.3;}}
+    .scrape-badge{font-size:0.62rem;font-family:'Share Tech Mono';color:var(--c-lime);background:rgba(0,255,136,0.08);border:1px solid rgba(0,255,136,0.2);padding:2px 7px;border-radius:3px;margin-left:8px;vertical-align:middle;}
+    .scrape-badge.api{color:var(--c-cyan);background:rgba(0,210,211,0.08);border-color:rgba(0,210,211,0.2);}
+    .member-tag{display:flex;align-items:center;gap:6px;background:var(--bg-card);padding:5px 9px;border-radius:3px;border:1px solid var(--border);font-size:0.82rem;}
+    .member-tag.online{border-color:rgba(0,255,136,0.3);}
+    .member-tag img{width:24px;height:24px;border-radius:2px;}
+  </style>
+</head>
+<body>
+
+<div id="login-overlay">
+  <div class="login-center-box">
+    <div style="margin-bottom:22px;">
+      <svg width="56" height="56" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M50 5L90 80H10Z" stroke="#388bfd" stroke-width="3" fill="none"/>
+        <path d="M50 95L90 20H10Z" stroke="#388bfd" stroke-width="3" fill="none"/>
+      </svg>
+    </div>
+    <div class="login-title">MOSSAD GLORY</div>
+    <div class="login-subtitle">Accès Restreint — Systèmes de Renseignement</div>
+    <div class="login-box">
+      <div class="login-label-top">Code d'accès d'accréditation</div>
+      <input type="password" id="access-key" placeholder="Mot de passe maître..." onkeydown="if(event.key==='Enter')performSecureLogin()"/>
+      <button class="login-btn" onclick="performSecureLogin()">▶ S'authentifier</button>
+      <div class="login-error" id="login-err-frame"></div>
+    </div>
+  </div>
+</div>
+
+<div id="terminal-app" style="display:none;flex-direction:column;height:100vh;">
+  <header>
+    <div class="header-section">
+      <div>
+        <div class="brand-title">MOSSAD GLORY</div>
+        <div class="brand-subtitle">Intelligence Terminal – V4</div>
+      </div>
+      <div class="sys-widget" style="color:var(--c-lime);font-size:0.72rem;">⚡ DYNMAP SCRAPING</div>
+      <div class="sys-widget" id="header-date" style="font-size:0.72rem;"></div>
+      <div class="sys-widget" style="font-size:0.72rem;color:var(--text-secondary);">🇮🇱 MOSSAD</div>
+    </div>
+    <div class="header-section">
+      <div class="sys-widget"><div class="dot-status dot-online"></div><span id="api-status-txt">DYNMAP OK</span></div>
+      <div class="sys-widget" style="font-size:0.72rem;">SCAN <span style="color:var(--success);margin-left:5px;">●</span> <span style="color:var(--text-secondary);">LIVE</span></div>
+      <div class="sys-widget" style="color:var(--accent-bright);min-width:75px;text-align:center;font-size:0.9rem;" id="top-clock">00:00:00</div>
+    </div>
+  </header>
+
+  <div class="main-nav">
+    <div class="tabs-container">
+      <div class="tab-item active" onclick="switchPane('dashboard',this)">❖ Dashboard</div>
+      <div class="tab-item" onclick="switchPane('activite',this)">■ Activité</div>
+      <div class="tab-item" onclick="switchPane('localisation',this)">⌖ Localiser</div>
+      <div class="tab-item" onclick="switchPane('espionnage',this)">⚔ Espionner</div>
+      <div class="tab-item" onclick="switchPane('watchlist',this)">● Watchlist</div>
+      <div class="tab-item" onclick="switchPane('stats',this)">◈ Stats</div>
+      <div class="tab-item" onclick="switchPane('pays',this)">🌍 Pays</div>
+      <div class="tab-item" onclick="switchPane('redmatter',this)">☢ Red Matter</div>
+      <div class="tab-item" onclick="switchPane('referents',this)">◉ Référents</div>
+      <div class="tab-item" onclick="switchPane('subpower',this)">▼ Sous-Power</div>
+      <div class="tab-item tab-warn" onclick="switchPane('confidentiel',this)">🔒 Confidentielle</div>
+    </div>
+    <div style="font-size:0.78rem;color:var(--success);font-weight:bold;white-space:nowrap;margin-left:15px;" id="global-status-tag">● SYSTÈME SYNCHRONISÉ</div>
+  </div>
+
+  <div id="app-viewport">
+
+    <!-- DASHBOARD -->
+    <div class="page-wrapper active" id="pane-dashboard">
+      <div class="dashboard-layout">
+        <div style="display:flex;flex-direction:column;gap:14px;">
+          <div class="section-header">Réseau Global — <span id="total-online-banner">0</span> joueurs en ligne <span class="scrape-badge">DYNMAP LIVE</span></div>
+          <div class="servers-panel-grid" id="dashboard-servers-container"></div>
+        </div>
+        <div class="panel-box">
+          <div class="panel-title-bar">
+            <div class="panel-title">Activité — Joueurs en ligne</div>
+            <div class="time-filters">
+              <button class="filter-btn active" onclick="updateChartTimeframe('3h',this)">3h</button>
+              <button class="filter-btn" onclick="updateChartTimeframe('6h',this)">6h</button>
+              <button class="filter-btn" onclick="updateChartTimeframe('24h',this)">24h</button>
+              <button class="filter-btn" onclick="updateChartTimeframe('7j',this)">7j</button>
+            </div>
+          </div>
+          <div style="flex:1;position:relative;min-height:300px;"><canvas id="globalActivityChart"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ACTIVITE -->
+    <div class="page-wrapper" id="pane-activite">
+      <div class="panel-box">
+        <div class="panel-title-bar">
+          <div class="panel-title">Historique d'Activité par Serveur</div>
+          <div class="time-filters">
+            <button class="filter-btn active" onclick="updateActivityChart('3h',this)">3h</button>
+            <button class="filter-btn" onclick="updateActivityChart('6h',this)">6h</button>
+            <button class="filter-btn" onclick="updateActivityChart('24h',this)">24h</button>
+            <button class="filter-btn" onclick="updateActivityChart('7j',this)">7j</button>
+          </div>
+        </div>
+        <div style="position:relative;min-height:420px;"><canvas id="activityDetailChart"></canvas></div>
+      </div>
+      <div class="panel-box">
+        <div class="panel-title">Statistiques Instantanées <span class="scrape-badge">DYNMAP SCRAPING</span></div>
+        <div id="activite-stats-grid" class="grid-stats-box cols4"></div>
+      </div>
+    </div>
+
+    <!-- LOCALISER -->
+    <div class="page-wrapper" id="pane-localisation">
+      <div class="panel-box">
+        <div class="panel-title">Localisation Satellite — SessionTracker <span class="scrape-badge">DYNMAP</span></div>
+        <div style="font-size:0.78rem;color:var(--text-secondary);font-family:'Share Tech Mono';">Scan en temps réel des 11 serveurs Dynmap. Le joueur doit être connecté pour être détecté.</div>
+        <div class="search-group">
+          <input type="text" id="localise-name" class="form-input" placeholder="Pseudo exact du joueur (ex: Romaindu35)..." onkeydown="if(event.key==='Enter')locatePlayerGlobal()"/>
+          <button class="action-btn" onclick="locatePlayerGlobal()">▶ Lancer la recherche</button>
+        </div>
+        <div id="localisation-result" style="margin-top:5px;"></div>
+      </div>
+      <div class="panel-box">
+        <div class="panel-title">Carte des Serveurs NationsGlory</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;">
+          <a href="https://lime.nationsglory.fr" target="_blank" style="text-decoration:none;"><div class="stat-node" style="cursor:pointer;border-color:rgba(0,255,136,0.3);"><div class="stat-lbl">🗺 Lime</div><div style="font-size:0.8rem;color:var(--c-lime);font-family:'Share Tech Mono';">Voir la minimap →</div></div></a>
+          <a href="https://blue.nationsglory.fr" target="_blank" style="text-decoration:none;"><div class="stat-node" style="cursor:pointer;border-color:rgba(84,160,255,0.3);"><div class="stat-lbl">🗺 Blue</div><div style="font-size:0.8rem;color:var(--c-blue);font-family:'Share Tech Mono';">Voir la minimap →</div></div></a>
+          <a href="https://coral.nationsglory.fr" target="_blank" style="text-decoration:none;"><div class="stat-node" style="cursor:pointer;border-color:rgba(255,82,82,0.3);"><div class="stat-lbl">🗺 Coral</div><div style="font-size:0.8rem;color:var(--c-coral);font-family:'Share Tech Mono';">Voir la minimap →</div></div></a>
+          <a href="https://cyan.nationsglory.fr" target="_blank" style="text-decoration:none;"><div class="stat-node" style="cursor:pointer;border-color:rgba(0,210,211,0.3);"><div class="stat-lbl">🗺 Cyan</div><div style="font-size:0.8rem;color:var(--c-cyan);font-family:'Share Tech Mono';">Voir la minimap →</div></div></a>
+          <a href="https://mocha.nationsglory.fr" target="_blank" style="text-decoration:none;"><div class="stat-node" style="cursor:pointer;border-color:rgba(160,120,90,0.3);"><div class="stat-lbl">🗺 Mocha</div><div style="font-size:0.8rem;color:var(--c-mocha);font-family:'Share Tech Mono';">Voir la minimap →</div></div></a>
+          <a href="https://red.nationsglory.fr" target="_blank" style="text-decoration:none;"><div class="stat-node" style="cursor:pointer;border-color:rgba(255,74,74,0.3);"><div class="stat-lbl">🗺 Red</div><div style="font-size:0.8rem;color:var(--c-red);font-family:'Share Tech Mono';">Voir la minimap →</div></div></a>
+          <a href="https://orange.nationsglory.fr" target="_blank" style="text-decoration:none;"><div class="stat-node" style="cursor:pointer;border-color:rgba(255,159,67,0.3);"><div class="stat-lbl">🗺 Orange</div><div style="font-size:0.8rem;color:var(--c-orange);font-family:'Share Tech Mono';">Voir la minimap →</div></div></a>
+          <a href="https://yellow.nationsglory.fr" target="_blank" style="text-decoration:none;"><div class="stat-node" style="cursor:pointer;border-color:rgba(254,202,87,0.3);"><div class="stat-lbl">🗺 Yellow</div><div style="font-size:0.8rem;color:var(--c-yellow);font-family:'Share Tech Mono';">Voir la minimap →</div></div></a>
+          <a href="https://white.nationsglory.fr" target="_blank" style="text-decoration:none;"><div class="stat-node" style="cursor:pointer;border-color:rgba(224,224,224,0.3);"><div class="stat-lbl">🗺 White</div><div style="font-size:0.8rem;color:var(--c-white);font-family:'Share Tech Mono';">Voir la minimap →</div></div></a>
+          <a href="https://black.nationsglory.fr" target="_blank" style="text-decoration:none;"><div class="stat-node" style="cursor:pointer;border-color:rgba(136,153,170,0.3);"><div class="stat-lbl">🗺 Black</div><div style="font-size:0.8rem;color:var(--c-black);font-family:'Share Tech Mono';">Voir la minimap →</div></div></a>
+          <a href="https://jade.nationsglory.fr" target="_blank" style="text-decoration:none;"><div class="stat-node" style="cursor:pointer;border-color:rgba(16,172,132,0.3);"><div class="stat-lbl">🗺 Jade</div><div style="font-size:0.8rem;color:var(--c-jade);font-family:'Share Tech Mono';">Voir la minimap →</div></div></a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ESPIONNAGE -->
+    <div class="page-wrapper" id="pane-espionnage">
+      <div class="panel-box">
+        <div class="panel-title">Espionnage — Analyse Pays <span class="scrape-badge api">API</span><span class="scrape-badge">DYNMAP</span></div>
+        <div class="search-group">
+          <select id="espionnage-server" class="form-select">
+            <option value="lime" selected>Lime</option><option value="blue">Blue</option><option value="coral">Coral</option>
+            <option value="cyan">Cyan</option><option value="mocha">Mocha</option><option value="red">Red</option>
+            <option value="orange">Orange</option><option value="yellow">Yellow</option><option value="white">White</option>
+            <option value="black">Black</option><option value="jade">Jade</option>
+          </select>
+          <input type="text" id="espionnage-country" class="form-input" placeholder="Nom exact du pays (ex: France)..." onkeydown="if(event.key==='Enter')gatherCountryEspionage()"/>
+          <button class="action-btn" onclick="gatherCountryEspionage()">⚔ Extraire les données</button>
+        </div>
+        <div id="esp-loading" style="display:none;" class="loading-text"><div class="spinner"></div> Interrogation des endpoints...</div>
+        <div id="esp-error-node" class="error-text" style="display:none;"></div>
+        <div id="esp-results-container" style="display:none;flex-direction:column;gap:14px;">
+          <div class="grid-stats-box cols4">
+            <div class="stat-node"><div class="stat-lbl">Pays</div><div class="stat-val" id="esp-name" style="color:var(--accent-bright);font-size:1.4rem;">-</div></div>
+            <div class="stat-node"><div class="stat-lbl">Serveur</div><div class="stat-val" id="esp-server-lbl" style="font-size:1.1rem;">-</div></div>
+            <div class="stat-node"><div class="stat-lbl">Membres</div><div class="stat-val" id="esp-members">-</div></div>
+            <div class="stat-node"><div class="stat-lbl">Capital</div><div class="stat-val" id="esp-capital" style="font-size:0.95rem;">-</div></div>
+          </div>
+          <div class="grid-stats-box">
+            <div class="stat-node"><div class="stat-lbl">PIB / Banque</div><div class="stat-val" id="esp-pib" style="color:var(--success)">-</div></div>
+            <div class="stat-node"><div class="stat-lbl">Power actuel</div><div class="stat-val" id="esp-power" style="color:var(--warning)">-</div></div>
+            <div class="stat-node"><div class="stat-lbl">Max Power</div><div class="stat-val" id="esp-maxpower">-</div></div>
+            <div class="stat-node"><div class="stat-lbl">Claims</div><div class="stat-val" id="esp-claims" style="color:var(--accent-bright)">-</div></div>
+            <div class="stat-node"><div class="stat-lbl">MMR</div><div class="stat-val" id="esp-mmr" style="color:var(--c-yellow)">-</div></div>
+            <div class="stat-node"><div class="stat-lbl">Statut Power</div><div class="stat-val" id="esp-power-status" style="font-size:0.85rem;">-</div></div>
+          </div>
+          <div class="grid-stats-box cols4">
+            <div class="stat-node"><div class="stat-lbl">Taxes (%)</div><div class="stat-val" id="esp-taxes">-</div></div>
+            <div class="stat-node"><div class="stat-lbl">Recrutement</div><div class="stat-val" id="esp-open">-</div></div>
+            <div class="stat-node"><div class="stat-lbl">En ligne (Dynmap)</div><div class="stat-val" id="esp-online-count" style="color:var(--success)">-</div></div>
+            <div class="stat-node"><div class="stat-lbl">Rang MMR Serveur</div><div class="stat-val" id="esp-mmr-rank" style="color:var(--c-yellow)">-</div></div>
+          </div>
+          <div class="stat-node">
+            <div class="stat-lbl">Membres connectés maintenant <span class="scrape-badge">DYNMAP LIVE</span></div>
+            <div id="esp-online-members" style="margin-top:8px;display:flex;flex-wrap:wrap;gap:8px;"></div>
+          </div>
+          <div class="stat-node">
+            <div class="stat-lbl">Tous les membres du pays</div>
+            <div id="esp-members-list" style="margin-top:8px;display:flex;flex-wrap:wrap;gap:8px;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- WATCHLIST -->
+    <div class="page-wrapper" id="pane-watchlist">
+      <div class="panel-box">
+        <div class="panel-title">Watchlist — Surveillance LIME <span class="scrape-badge">DYNMAP SCRAPING</span></div>
+        <div style="font-size:0.78rem;color:var(--warning);font-family:'Share Tech Mono';margin-bottom:4px;">⚠ Détection en temps réel via Dynmap Lime uniquement</div>
+        <div class="search-group">
+          <input type="text" id="watch-name" class="form-input" placeholder="Pseudo exact du joueur à surveiller..." onkeydown="if(event.key==='Enter')addToWatchlist()"/>
+          <button class="action-btn" onclick="addToWatchlist()">+ Inscrire le sujet</button>
+          <button class="action-btn" onclick="checkWatchlistStatus()" style="background:#0d3a2a;">↺ Actualiser</button>
+        </div>
+        <div class="data-list" id="watchlist-container"><div class="warning-text">Chargement...</div></div>
+      </div>
+    </div>
+
+    <!-- STATS -->
+    <div class="page-wrapper" id="pane-stats">
+      <div class="panel-box">
+        <div class="panel-title">Statistiques Globales — Classement MMR <span class="scrape-badge api">API</span></div>
+        <button class="action-btn" onclick="loadMMRStats()" style="align-self:flex-start;">Charger le classement MMR</button>
+        <div id="stats-loading" style="display:none;" class="loading-text"><div class="spinner"></div> Récupération du classement...</div>
+        <div id="stats-mmr-container" class="data-list" style="max-height:500px;"></div>
+      </div>
+    </div>
+
+    <!-- PAYS -->
+    <div class="page-wrapper" id="pane-pays">
+      <div class="panel-box">
+        <div class="panel-title">Pays — Joueurs Connectés <span class="scrape-badge">DYNMAP</span><span class="scrape-badge api">API</span></div>
+        <div style="font-size:0.78rem;color:var(--text-secondary);font-family:'Share Tech Mono';">Les membres connectés sont détectés en temps réel via Dynmap. Les joueurs en ligne apparaissent en premier.</div>
+        <div class="search-group">
+          <select id="pays-server" class="form-select">
+            <option value="lime" selected>Lime</option><option value="blue">Blue</option><option value="coral">Coral</option>
+            <option value="cyan">Cyan</option><option value="mocha">Mocha</option><option value="red">Red</option>
+            <option value="orange">Orange</option><option value="yellow">Yellow</option><option value="white">White</option>
+            <option value="black">Black</option><option value="jade">Jade</option>
+          </select>
+          <input type="text" id="pays-country" class="form-input" placeholder="Nom du pays (ex: France)..." onkeydown="if(event.key==='Enter')loadPaysPlayers()"/>
+          <button class="action-btn" onclick="loadPaysPlayers()">🔍 Rechercher</button>
+        </div>
+        <div id="pays-loading" style="display:none;" class="loading-text"><div class="spinner"></div> Recherche via Dynmap...</div>
+        <div id="pays-error" class="error-text" style="display:none;"></div>
+        <div id="pays-result" style="display:none;flex-direction:column;gap:10px;">
+          <div id="pays-info-header" class="info-box"></div>
+          <div class="section-header">Membres — En ligne en premier (Dynmap Live)</div>
+          <div id="pays-players-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:9px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RED MATTER -->
+    <div class="page-wrapper" id="pane-redmatter">
+      <div class="panel-box">
+        <div class="panel-title">Simulateur Balistique — Red Matter Missile Tier 4</div>
+        <div class="info-box" style="font-size:0.78rem;color:var(--text-secondary);">
+          <strong style="color:var(--danger);">☢ RED MATTER MISSILE — TIER 4</strong> — Arme balistique ultime de NationsGlory<br>
+          • 🏦 Vol de <strong style="color:var(--success);">20% de la banque</strong> du pays cible<br>
+          • ⚡ Réduction du <strong style="color:var(--warning);">power de 35%</strong> pendant 3 minutes<br>
+          • 🗺 Destruction d'environ <strong style="color:var(--accent-bright);">5% des claims</strong><br>
+          • 💰 Coût : <strong>~500 000 $</strong> &nbsp;|&nbsp; ⏱ Impact : <strong>3 minutes</strong> &nbsp;|&nbsp; 🎯 Portée : <strong>Illimitée</strong>
+        </div>
+        <div class="search-group">
+          <select id="rm-server" class="form-select">
+            <option value="lime" selected>Lime</option><option value="blue">Blue</option><option value="coral">Coral</option>
+            <option value="cyan">Cyan</option><option value="mocha">Mocha</option><option value="red">Red</option>
+            <option value="orange">Orange</option><option value="yellow">Yellow</option><option value="white">White</option>
+            <option value="black">Black</option><option value="jade">Jade</option>
+          </select>
+          <input type="text" id="rm-country" class="form-input" placeholder="Pays cible..." onkeydown="if(event.key==='Enter')prepareRedMatter()"/>
+          <button class="action-btn danger" onclick="prepareRedMatter()">☢ Charger les données cibles</button>
+        </div>
+        <div id="rm-loading" style="display:none;" class="loading-text"><div class="spinner"></div> Acquisition des données...</div>
+        <div id="rm-error" class="error-text" style="display:none;"></div>
+        <div id="rm-target-info" style="display:none;flex-direction:column;gap:14px;">
+          <div class="grid-stats-box">
+            <div class="stat-node"><div class="stat-lbl">Pays Cible</div><div class="stat-val" id="rm-target-name" style="color:var(--danger)">-</div></div>
+            <div class="stat-node"><div class="stat-lbl">PIB / Banque</div><div class="stat-val" id="rm-target-pib" style="color:var(--success)">-</div></div>
+            <div class="stat-node"><div class="stat-lbl">Power actuel</div><div class="stat-val" id="rm-target-power" style="color:var(--warning)">-</div></div>
+          </div>
+          <div class="sim-alert">⚠ CALCUL D'IMPACT — MISSILE RED MATTER TIER 4</div>
+          <div class="grid-stats-box cols4">
+            <div class="stat-node"><div class="stat-lbl">Vol estimé (20% banque)</div><div class="stat-val" id="rm-pib-transfer" style="color:var(--success)">-</div></div>
+            <div class="stat-node"><div class="stat-lbl">Power après impact (−35%)</div><div class="stat-val" id="rm-power-after" style="color:var(--danger)">-</div></div>
+            <div class="stat-node"><div class="stat-lbl">Claims perdus (~5%)</div><div class="stat-val" id="rm-claims-lost" style="color:var(--warning)">-</div></div>
+            <div class="stat-node"><div class="stat-lbl">Coût missile</div><div class="stat-val" style="color:var(--text-secondary);font-size:1rem;">~500 000 $</div></div>
+          </div>
+          <div class="grid-stats-box cols4">
+            <div class="stat-node"><div class="stat-lbl">Rentabilité nette</div><div class="stat-val" id="rm-profit">-</div></div>
+            <div class="stat-node"><div class="stat-lbl">Sous-power après frappe ?</div><div class="stat-val" id="rm-subpower-after" style="font-size:0.85rem;">-</div></div>
+            <div class="stat-node"><div class="stat-lbl">Joueurs en ligne (serveur)</div><div class="stat-val" id="rm-online-count" style="color:var(--c-lime)">-</div></div>
+            <div class="stat-node"><div class="stat-lbl">Résistance estimée</div><div class="stat-val" id="rm-resistance" style="font-size:0.85rem;">-</div></div>
+          </div>
+          <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+            <button class="action-btn danger" onclick="executeRedMatterSimulation()">🚀 Lancer la simulation de frappe</button>
+            <button class="action-btn" onclick="resetRMSimulation()" style="background:#1a2a40;">Réinitialiser</button>
+          </div>
+          <div id="rm-simulation-frame" style="display:none;flex-direction:column;gap:14px;">
+            <div class="sim-alert" style="animation:blink 0.8s infinite;">☢ MISSILE EN TRANSIT — IMPACT IMMINENT</div>
+            <div class="grid-stats-box">
+              <div class="stat-node"><div class="stat-lbl">Power Restant</div><div class="stat-val" id="rm-power-live" style="color:var(--danger)">-</div></div>
+              <div class="stat-node"><div class="stat-lbl">Butin Extorqué</div><div class="stat-val" id="rm-pib-stolen" style="color:var(--success)">0 $</div></div>
+              <div class="stat-node"><div class="stat-lbl">Décompte d'impact</div><div class="stat-val" id="rm-timer" style="color:var(--warning);font-family:'Share Tech Mono';">03:00</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- REFERENTS -->
+    <div class="page-wrapper" id="pane-referents">
+      <div class="panel-box">
+        <div class="panel-title">Pays Référents — Tous les Serveurs <span class="scrape-badge api">API MMR</span></div>
+        <div style="font-size:0.78rem;color:var(--text-secondary);font-family:'Share Tech Mono';">Pays au statut référent : nations les mieux classées au MMR sur chaque serveur NationsGlory.</div>
+        <button class="action-btn" onclick="loadReferents()" style="align-self:flex-start;">◉ Charger tous les référents</button>
+        <div id="referents-loading" style="display:none;" class="loading-text"><div class="spinner"></div> Analyse de tous les serveurs...</div>
+        <div id="referents-container" class="ref-grid"></div>
+      </div>
+    </div>
+
+    <!-- SOUS-POWER -->
+    <div class="page-wrapper" id="pane-subpower">
+      <div class="panel-box">
+        <div class="panel-title">Pays Sous-Power — Claims > Power <span class="scrape-badge api">API</span></div>
+        <div style="font-size:0.78rem;color:var(--text-secondary);font-family:'Share Tech Mono';">Pays vulnérables dont les claims dépassent le power disponible — peuvent être pillés ou attaqués.</div>
+        <button class="action-btn" onclick="loadSubpowerReport()" style="align-self:flex-start;">▼ Actualiser l'analyse complète</button>
+        <div id="subpower-loading" style="display:none;" class="loading-text"><div class="spinner"></div> Analyse de tous les serveurs...</div>
+        <div id="subpower-list"></div>
+      </div>
+    </div>
+
+    <!-- CONFIDENTIELLE -->
+    <div class="page-wrapper" id="pane-confidentiel">
+      <div class="panel-box" style="max-width:520px;">
+        <div class="panel-title">🔒 Zone Confidentielle — Gestion des Accès</div>
+        <div class="info-box" style="font-size:0.78rem;color:var(--text-secondary);">Modifier le mot de passe d'accès au terminal. Stocké localement.</div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <div class="stat-lbl" style="margin-bottom:2px;">Nouveau mot de passe maître</div>
+          <input type="password" id="new-master-pass" class="form-input" placeholder="Nouveau mot de passe..." style="max-width:400px;"/>
+          <input type="password" id="confirm-master-pass" class="form-input" placeholder="Confirmer..." style="max-width:400px;"/>
+          <button class="action-btn" onclick="updateMasterPassword()" style="align-self:flex-start;padding:0 30px;">Mettre à jour</button>
+        </div>
+        <div id="pass-change-msg" class="success-text" style="display:none;"></div>
+        <div id="pass-change-err" class="error-text" style="display:none;"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const API_KEY="NGAPI_b7Tn@i4eIL9ZoLnnqI$Q6%vJ$W1y6oFJf077f5eaac79de484ddd5b73f6663bb1";
+const BASE_URL="https://publicapi.nationsglory.fr";
+const CORS_PROXY="https://corsproxy.io/?url=";
+const SERVERS=['lime','blue','coral','cyan','mocha','red','orange','yellow','white','black','jade'];
+const DYNMAP_BASES={lime:'https://lime.nationsglory.fr',blue:'https://blue.nationsglory.fr',coral:'https://coral.nationsglory.fr',cyan:'https://cyan.nationsglory.fr',mocha:'https://mocha.nationsglory.fr',red:'https://red.nationsglory.fr',orange:'https://orange.nationsglory.fr',yellow:'https://yellow.nationsglory.fr',white:'https://white.nationsglory.fr',black:'https://black.nationsglory.fr',jade:'https://jade.nationsglory.fr'};
+const SERVER_COLORS={lime:'#00ff88',blue:'#54a0ff',coral:'#ff5252',cyan:'#00d2d3',mocha:'#a0785a',red:'#ff4a4a',orange:'#ff9f43',yellow:'#feca57',white:'#e0e0e0',black:'#8899aa',jade:'#10ac84'};
+
+let mainChart=null,activityDetailChart=null,rmTimerId=null,cachedPlayercount={};
+let dynmapCache={},dynmapCacheTime={};
+const DYNMAP_TTL=20000;
+
+async function apiFetch(path){
+  const url=BASE_URL+path;
+  try{const r=await fetch(url,{headers:{'x-api-key':API_KEY,'Accept':'application/json'}});if(r.ok)return r;}catch(e){}
+  return fetch(CORS_PROXY+encodeURIComponent(url),{headers:{'Accept':'application/json','x-api-key':API_KEY}});
+}
+
+async function dynmapGetPlayers(srv){
+  const now=Date.now();
+  if(dynmapCache[srv]&&(now-(dynmapCacheTime[srv]||0))<DYNMAP_TTL)return dynmapCache[srv];
+  const base=DYNMAP_BASES[srv];
+  if(!base)return[];
+  const eps=[`${base}/up/world/world/0`,`${base}/up/world/nationsglory/0`,`${base}/standalone/dynmap_nationsglory.json`,`${base}/standalone/dynmap_world.json`];
+  for(const ep of eps){
+    try{
+      let data=null;
+      try{const r=await fetch(ep);if(r.ok)data=await r.json();}catch(e){}
+      if(!data){const r2=await fetch(CORS_PROXY+encodeURIComponent(ep));if(r2.ok)data=await r2.json();}
+      if(data&&data.players&&Array.isArray(data.players)){
+        const players=data.players.map(p=>({name:p.account||p.name||p.playerName||'',world:p.world||'',x:p.x||0,y:p.y||0,z:p.z||0})).filter(p=>p.name);
+        dynmapCache[srv]=players;dynmapCacheTime[srv]=now;return players;
+      }
+    }catch(e){}
+  }
+  try{
+    const r=await apiFetch(`/online/${srv}`);
+    if(r&&r.ok){
+      const list=await r.json();
+      const players=(Array.isArray(list)?list:(list.players||list.online||[])).map(p=>({name:typeof p==='string'?p:(p.name||p.pseudo||''),world:srv,x:0,y:0,z:0})).filter(p=>p.name);
+      dynmapCache[srv]=players;dynmapCacheTime[srv]=now;return players;
+    }
+  }catch(e){}
+  return[];
+}
+
+async function dynmapGetAll(){
+  const res=await Promise.all(SERVERS.map(async srv=>{const p=await dynmapGetPlayers(srv);return{srv,players:p};}));
+  const map={};res.forEach(({srv,players})=>map[srv]=players);return map;
+}
+
+if(!localStorage.getItem('terminalPassword'))localStorage.setItem('terminalPassword','MossadGlory2024');
+if(!localStorage.getItem('watchlistData'))localStorage.setItem('watchlistData',JSON.stringify([]));
+
+function performSecureLogin(){
+  const entry=document.getElementById('access-key').value.trim();
+  const valid=localStorage.getItem('terminalPassword');
+  if(entry===valid){
+    document.getElementById('login-overlay').style.display='none';
+    document.getElementById('terminal-app').style.display='flex';
+    startSystemClock();setHeaderDate();pullNetworkData();
+    setInterval(pullNetworkData,30000);
+  }else{
+    const err=document.getElementById('login-err-frame');
+    err.innerText="CLÉ NON RECONNUE. ACCÈS REFUSÉ.";
+    setTimeout(()=>err.innerText='',3000);
+  }
+}
+
+function startSystemClock(){setInterval(()=>{document.getElementById('top-clock').innerText=new Date().toLocaleTimeString('fr-FR');},1000);}
+function setHeaderDate(){document.getElementById('header-date').innerText=new Date().toLocaleDateString('fr-FR');}
+
+function switchPane(id,el){
+  document.querySelectorAll('.page-wrapper').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-item').forEach(t=>t.classList.remove('active'));
+  document.getElementById('pane-'+id).classList.add('active');
+  if(el)el.classList.add('active');
+  if(id==='watchlist')checkWatchlistStatus();
+  if(id==='activite')buildActivityDetailChart(cachedPlayercount,'3h');
+}
+
+async function pullNetworkData(){
+  try{
+    const all=await dynmapGetAll();
+    const data={};SERVERS.forEach(s=>data[s]=(all[s]||[]).length);
+    cachedPlayercount=data;renderDashboardCards(data);buildMultiCurveChart(data);
+  }catch(e){
+    try{
+      const res=await apiFetch('/playercount');
+      let data={};
+      if(res&&res.ok)data=await res.json();
+      else SERVERS.forEach(s=>data[s]=0);
+      cachedPlayercount=data;renderDashboardCards(data);buildMultiCurveChart(data);
+    }catch(e2){
+      const data={};SERVERS.forEach(s=>data[s]=0);
+      cachedPlayercount=data;renderDashboardCards(data);buildMultiCurveChart(data);
+    }
+  }
+}
+
+function renderDashboardCards(data){
+  const container=document.getElementById('dashboard-servers-container');
+  container.innerHTML='';let total=0;
+  SERVERS.forEach(srv=>{
+    const count=(data[srv]!==undefined&&data[srv]!==null)?Number(data[srv]):0;
+    total+=count;const pct=Math.min((count/150)*100,100);
+    container.innerHTML+=`<div class="server-card c-${srv}"><div class="server-meta"><span>${srv.toUpperCase()}</span><div style="display:flex;align-items:center;gap:4px;"><div class="server-indicator"></div><span style="font-size:0.6rem;">EN LIGNE</span></div></div><div class="server-val">${count}</div><div class="server-sublbl">joueurs connectés</div><div class="progress-bar-bg"><div class="progress-bar-fill" style="width:${pct}%"></div></div></div>`;
+  });
+  document.getElementById('total-online-banner').innerText=total;
+  const grid=document.getElementById('activite-stats-grid');
+  if(grid){grid.innerHTML='';SERVERS.forEach(srv=>{const c=(data[srv]!==undefined)?Number(data[srv]):0;grid.innerHTML+=`<div class="stat-node"><div class="stat-lbl" style="color:${SERVER_COLORS[srv]}">${srv.toUpperCase()}</div><div class="stat-val">${c}</div></div>`;});}
+}
+
+function generateHistoLabels(range){
+  const now=new Date(),labels=[];
+  let steps,stepMs;
+  if(range==='3h'){steps=18;stepMs=10*60*1000;}
+  else if(range==='6h'){steps=24;stepMs=15*60*1000;}
+  else if(range==='24h'){steps=24;stepMs=60*60*1000;}
+  else{steps=28;stepMs=6*60*60*1000;}
+  for(let i=steps;i>=0;i--){
+    const t=new Date(now.getTime()-i*stepMs);
+    if(range==='7j')labels.push(t.toLocaleDateString('fr-FR',{weekday:'short',day:'numeric'}));
+    else labels.push(t.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}));
+  }
+  return labels;
+}
+function generateHistoData(base,steps){const arr=[];let cur=base;for(let i=0;i<=steps;i++){cur=Math.max(0,cur+(Math.random()-0.48)*10);arr.push(Math.round(cur));}return arr;}
+
+function buildMultiCurveChart(liveData){
+  const ctx=document.getElementById('globalActivityChart').getContext('2d');
+  const labels=generateHistoLabels('3h');
+  const datasets=SERVERS.map(srv=>({label:srv.toUpperCase(),data:generateHistoData(liveData[srv]?Number(liveData[srv]):10,18),borderColor:SERVER_COLORS[srv],backgroundColor:'transparent',borderWidth:1.8,tension:0.35,pointRadius:0,pointHoverRadius:3}));
+  if(mainChart)mainChart.destroy();
+  mainChart=new Chart(ctx,{type:'line',data:{labels,datasets},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{display:true,position:'right',labels:{color:'#6c8aa7',boxWidth:12,font:{size:10}}}},scales:{x:{grid:{color:'rgba(255,255,255,0.02)'},ticks:{color:'#6c8aa7',maxTicksLimit:8,font:{size:10}}},y:{grid:{color:'rgba(255,255,255,0.03)'},ticks:{color:'#6c8aa7',font:{size:10}}}}}});
+}
+function buildActivityDetailChart(liveData,range){
+  const ctx=document.getElementById('activityDetailChart');if(!ctx)return;
+  const steps=range==='3h'?18:range==='6h'?24:range==='24h'?24:28;
+  const labels=generateHistoLabels(range);
+  const datasets=SERVERS.map(srv=>({label:srv.toUpperCase(),data:generateHistoData(liveData[srv]?Number(liveData[srv]):10,steps),borderColor:SERVER_COLORS[srv],backgroundColor:'transparent',borderWidth:1.8,tension:0.35,pointRadius:0}));
+  if(activityDetailChart)activityDetailChart.destroy();
+  activityDetailChart=new Chart(ctx.getContext('2d'),{type:'line',data:{labels,datasets},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{display:true,position:'right',labels:{color:'#6c8aa7',boxWidth:12,font:{size:10}}}},scales:{x:{grid:{color:'rgba(255,255,255,0.02)'},ticks:{color:'#6c8aa7',maxTicksLimit:10,font:{size:10}}},y:{grid:{color:'rgba(255,255,255,0.03)'},ticks:{color:'#6c8aa7',font:{size:10}}}}}});
+}
+function updateChartTimeframe(range,btn){document.querySelectorAll('#pane-dashboard .filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');buildMultiCurveChart(cachedPlayercount);}
+function updateActivityChart(range,btn){document.querySelectorAll('#pane-activite .filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');buildActivityDetailChart(cachedPlayercount,range);}
+
+// LOCALISER
+async function locatePlayerGlobal(){
+  const target=document.getElementById('localise-name').value.trim();
+  const out=document.getElementById('localisation-result');
+  if(!target)return;
+  out.innerHTML=`<div class="loading-text"><div class="spinner"></div> Scan Dynmap sur ${SERVERS.length} serveurs pour "${target}"...</div>`;
+  let foundSrv=null,foundPD=null;
+  try{
+    const allChecks=await Promise.all(SERVERS.map(async srv=>{
+      const players=await dynmapGetPlayers(srv);
+      const found=players.find(p=>p.name.toLowerCase()===target.toLowerCase());
+      return found?{srv,player:found}:null;
+    }));
+    const match=allChecks.find(r=>r!==null);
+    if(match){foundSrv=match.srv;foundPD=match.player;}
+  }catch(e){}
+  if(!foundSrv){
+    try{const res=await apiFetch(`/user/${encodeURIComponent(target)}`);if(res&&res.ok){const d=await res.json();if(d&&d.server)foundSrv=d.server.toLowerCase();}}catch(e){}
+  }
+  const avatarUrl=`https://skins.nationsglory.fr/face/${encodeURIComponent(target)}/48`;
+  if(foundSrv){
+    const color=SERVER_COLORS[foundSrv]||'var(--success)';
+    const posInfo=foundPD?`<div style="font-size:0.75rem;color:var(--text-secondary);font-family:'Share Tech Mono';">📍 X=${Math.round(foundPD.x)}, Y=${Math.round(foundPD.y)}, Z=${Math.round(foundPD.z)}</div>`:'';
+    const src=foundPD?'DYNMAP SCRAPING':'API NATIONSGLORY';
+    out.innerHTML=`<div class="info-box" style="display:flex;align-items:flex-start;gap:15px;"><img src="${avatarUrl}" style="width:48px;height:48px;border-radius:4px;border:1px solid var(--border);" onerror="this.style.display='none'"/><div style="display:flex;flex-direction:column;gap:5px;flex:1;"><div style="font-size:1.1rem;font-weight:700;">${target}</div><div>Serveur actif : <span style="color:${color};font-weight:bold;text-transform:uppercase;font-size:1.2rem;">${foundSrv.toUpperCase()}</span></div><div><span class="online-dot"></span><span style="color:var(--success);font-weight:bold;">EN LIGNE</span></div>${posInfo}<div style="font-size:0.7rem;color:var(--text-secondary);margin-top:4px;">Source : <span class="scrape-badge">${src}</span></div></div></div>`;
+  }else{
+    out.innerHTML=`<div class="info-box" style="display:flex;align-items:flex-start;gap:15px;"><img src="${avatarUrl}" style="width:48px;height:48px;border-radius:4px;border:1px solid var(--border);" onerror="this.style.display='none'"/><div style="display:flex;flex-direction:column;gap:5px;"><div style="font-size:1.1rem;font-weight:700;">${target}</div><div style="color:var(--danger);">● HORS LIGNE ou joueur introuvable</div><div style="font-size:0.78rem;color:var(--text-secondary);">Scan : ${SERVERS.length} serveurs Dynmap + API NationsGlory</div></div></div>`;
+  }
+}
+
+// WATCHLIST
+async function checkWatchlistStatus(){
+  const targets=JSON.parse(localStorage.getItem('watchlistData')||'[]');
+  const container=document.getElementById('watchlist-container');
+  container.innerHTML=`<div class="loading-text"><div class="spinner"></div> Scan Dynmap Lime...</div>`;
+  if(targets.length===0){container.innerHTML=`<div class="warning-text">Watchlist vide. Aucun sujet surveillé.</div>`;return;}
+  const limePlayers=await dynmapGetPlayers('lime');
+  const limeMap={};limePlayers.forEach(p=>limeMap[p.name.toLowerCase()]=p);
+  container.innerHTML='';
+  for(const target of targets){
+    const pd=limeMap[target.toLowerCase()];
+    const isOnLime=!!pd;
+    const avatarUrl=`https://skins.nationsglory.fr/face/${encodeURIComponent(target)}/32`;
+    let statusHtml='';
+    if(isOnLime){
+      const pos=pd?` — X:${Math.round(pd.x)} Z:${Math.round(pd.z)}`:'';
+      statusHtml=`<span class="online-dot"></span><span style="color:var(--success);font-weight:bold;">EN LIGNE — <span style="color:var(--c-lime);">LIME</span></span><span style="font-size:0.72rem;color:var(--text-secondary);font-family:'Share Tech Mono';">${pos}</span>`;
+    }else{
+      statusHtml=`<span style="color:var(--danger);">● HORS LIGNE sur Lime</span>`;
+    }
+    container.innerHTML+=`<div class="data-item" style="${isOnLime?'border-color:rgba(0,255,136,0.25);':''}"><div class="item-left"><img src="${avatarUrl}" class="player-face" onerror="this.src='data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=='"/><div><strong style="font-size:0.95rem;">${target}</strong><br/><span style="font-size:0.8rem;">${statusHtml}</span></div></div><button class="remove-btn" onclick="removeFromWatchlist('${target}')">✕ Retirer</button></div>`;
+  }
+}
+function addToWatchlist(){
+  const input=document.getElementById('watch-name').value.trim();
+  if(!input)return;
+  let targets=JSON.parse(localStorage.getItem('watchlistData')||'[]');
+  if(!targets.includes(input))targets.push(input);
+  localStorage.setItem('watchlistData',JSON.stringify(targets));
+  document.getElementById('watch-name').value='';
+  checkWatchlistStatus();
+}
+function removeFromWatchlist(name){
+  let targets=JSON.parse(localStorage.getItem('watchlistData')||'[]');
+  targets=targets.filter(t=>t!==name);
+  localStorage.setItem('watchlistData',JSON.stringify(targets));
+  checkWatchlistStatus();
+}
+
+// ESPIONNAGE
+async function gatherCountryEspionage(){
+  const srv=document.getElementById('espionnage-server').value;
+  const country=document.getElementById('espionnage-country').value.trim();
+  const loading=document.getElementById('esp-loading');
+  const errNode=document.getElementById('esp-error-node');
+  const container=document.getElementById('esp-results-container');
+  if(!country)return;
+  loading.style.display='flex';errNode.style.display='none';container.style.display='none';
+  try{
+    const [resCountry,resMMR,dynPlayers]=await Promise.all([
+      apiFetch(`/country/${srv}/${encodeURIComponent(country)}`).then(r=>(r&&r.ok)?r.json():null).catch(()=>null),
+      apiFetch('/mmr').then(r=>(r&&r.ok)?r.json():null).catch(()=>null),
+      dynmapGetPlayers(srv)
+    ]);
+    loading.style.display='none';
+    if(!resCountry){errNode.innerText=`✗ Pays "${country}" introuvable sur ${srv.toUpperCase()}.`;errNode.style.display='block';return;}
+    const c=resCountry;
+    const power=c.power||0,maxPower=c.maxPower||c.max_power||0,claims=c.claims||0,pib=c.pib||c.bank||0;
+    const members=c.members||[];
+    let mmrVal='-',mmrRank='-';
+    if(resMMR&&Array.isArray(resMMR)){
+      const sorted=resMMR.filter(m=>(m.server||'').toLowerCase()===srv).sort((a,b)=>(b.mmr||0)-(a.mmr||0));
+      const found=sorted.find(m=>m.name&&m.name.toLowerCase()===country.toLowerCase());
+      if(found){mmrVal=found.mmr||found.score||'-';mmrRank='#'+(sorted.indexOf(found)+1);}
+    }
+    const memberNames=Array.isArray(members)?members.map(m=>typeof m==='string'?m:(m.name||m.pseudo||'')):[]; 
+    const dynMap={};dynPlayers.forEach(p=>dynMap[p.name.toLowerCase()]=p);
+    const onlineMembers=memberNames.filter(n=>dynMap[n.toLowerCase()]);
+    const powerStatus=claims>power?`<span style="color:var(--danger);">⚠ SOUS-POWER (déficit : ${claims-power})</span>`:`<span style="color:var(--success);">✓ STABLE</span>`;
+    document.getElementById('esp-name').innerText=c.name||country;
+    document.getElementById('esp-server-lbl').innerHTML=`<span style="color:${SERVER_COLORS[srv]||'#fff'};">${srv.toUpperCase()}</span>`;
+    document.getElementById('esp-members').innerText=Array.isArray(members)?members.length:(c.memberCount||'-');
+    document.getElementById('esp-capital').innerText=c.capital||c.home||'-';
+    document.getElementById('esp-pib').innerText=pib?pib.toLocaleString('fr-FR')+' $':'-';
+    document.getElementById('esp-power').innerText=power;
+    document.getElementById('esp-maxpower').innerText=maxPower;
+    document.getElementById('esp-claims').innerText=claims;
+    document.getElementById('esp-mmr').innerText=mmrVal;
+    document.getElementById('esp-mmr-rank').innerText=mmrRank;
+    document.getElementById('esp-power-status').innerHTML=powerStatus;
+    document.getElementById('esp-taxes').innerText=c.taxes!==undefined?c.taxes+'%':'-';
+    document.getElementById('esp-open').innerText=c.open!==undefined?(c.open?'Ouvert':'Invitations'):'-';
+    document.getElementById('esp-online-count').innerText=onlineMembers.length+' / '+(Array.isArray(members)?members.length:'?');
+    const onlineEl=document.getElementById('esp-online-members');
+    onlineEl.innerHTML='';
+    if(onlineMembers.length>0){
+      onlineMembers.forEach(name=>{
+        const pd=dynMap[name.toLowerCase()];
+        const pos=pd?`X:${Math.round(pd.x)} Z:${Math.round(pd.z)}`:'';
+        const face=`https://skins.nationsglory.fr/face/${encodeURIComponent(name)}/24`;
+        onlineEl.innerHTML+=`<div class="member-tag online"><img src="${face}" onerror="this.style.display='none'"/><span class="online-dot"></span><div><div style="font-size:0.82rem;font-weight:600;">${name}</div>${pos?`<div style="font-size:0.68rem;color:var(--text-secondary);font-family:'Share Tech Mono';">${pos}</div>`:''}</div></div>`;
+      });
+    }else{onlineEl.innerHTML=`<span style="font-size:0.8rem;color:var(--text-secondary);">Aucun membre en ligne sur ${srv.toUpperCase()}</span>`;}
+    const membersListEl=document.getElementById('esp-members-list');
+    membersListEl.innerHTML='';
+    if(Array.isArray(members)&&members.length>0){
+      members.slice(0,40).forEach(m=>{
+        const name=typeof m==='string'?m:(m.name||m.pseudo||'?');
+        const isOnline=!!dynMap[name.toLowerCase()];
+        const face=`https://skins.nationsglory.fr/face/${encodeURIComponent(name)}/24`;
+        membersListEl.innerHTML+=`<div class="member-tag ${isOnline?'online':''}"><img src="${face}" onerror="this.style.display='none'"/>${isOnline?'<span class="online-dot"></span>':''}<span style="font-size:0.82rem;">${name}</span></div>`;
+      });
+      if(members.length>40)membersListEl.innerHTML+=`<span style="font-size:0.78rem;color:var(--text-secondary);">... et ${members.length-40} autres</span>`;
+    }else{membersListEl.innerHTML=`<span style="font-size:0.8rem;color:var(--text-secondary);">Aucun membre listé</span>`;}
+    window.latestTarget={name:country,pib,power,claims,server:srv};
+    container.style.display='flex';
+  }catch(e){loading.style.display='none';errNode.innerText='✗ Erreur lors de la récupération des données.';errNode.style.display='block';}
+}
+
+// STATS MMR
+async function loadMMRStats(){
+  const container=document.getElementById('stats-mmr-container');
+  const loading=document.getElementById('stats-loading');
+  container.innerHTML='';loading.style.display='flex';
+  try{
+    const res=await apiFetch('/mmr');loading.style.display='none';
+    if(!res||!res.ok){container.innerHTML=`<div class="error-text">✗ Impossible de récupérer le classement MMR.</div>`;return;}
+    const data=await res.json();
+    if(!Array.isArray(data)||data.length===0){container.innerHTML=`<div class="warning-text">Aucune donnée MMR disponible.</div>`;return;}
+    data.slice(0,50).forEach((item,i)=>{
+      const srv=(item.server||'').toLowerCase();const color=SERVER_COLORS[srv]||'#fff';
+      const name=item.name||item.country||'?';const mmr=item.mmr||item.score||'-';
+      container.innerHTML+=`<div class="data-item"><div class="item-left"><span style="color:var(--text-secondary);font-family:'Share Tech Mono';min-width:30px;">#${i+1}</span><div><strong>${name}</strong><span class="srv-badge" style="background:${color}22;color:${color};border:1px solid ${color}44;margin-left:8px;">${srv.toUpperCase()}</span></div></div><span style="color:var(--c-yellow);font-family:'Share Tech Mono';font-weight:bold;">${mmr} MMR</span></div>`;
+    });
+  }catch(e){loading.style.display='none';container.innerHTML=`<div class="error-text">✗ Erreur de connexion.</div>`;}
+}
+
+// PAYS
+async function loadPaysPlayers(){
+  const srv=document.getElementById('pays-server').value;
+  const country=document.getElementById('pays-country').value.trim();
+  const loading=document.getElementById('pays-loading');
+  const errEl=document.getElementById('pays-error');
+  const result=document.getElementById('pays-result');
+  const infoHeader=document.getElementById('pays-info-header');
+  const playersList=document.getElementById('pays-players-list');
+  if(!country)return;
+  loading.style.display='flex';errEl.style.display='none';result.style.display='none';
+  try{
+    const [res,dynPlayers]=await Promise.all([apiFetch(`/country/${srv}/${encodeURIComponent(country)}`),dynmapGetPlayers(srv)]);
+    loading.style.display='none';
+    if(!res||!res.ok){errEl.innerText=`✗ Pays "${country}" introuvable sur ${srv.toUpperCase()}.`;errEl.style.display='block';return;}
+    const data=await res.json();
+    const members=data.members||[];const pib=data.pib||data.bank||0;const power=data.power||0;
+    const memberNames=Array.isArray(members)?members.map(m=>typeof m==='string'?m:(m.name||m.pseudo||'')):[];
+    const dynMap={};dynPlayers.forEach(p=>dynMap[p.name.toLowerCase()]=p);
+    const srvColor=SERVER_COLORS[srv]||'#fff';
+    const onlineCount=memberNames.filter(n=>dynMap[n.toLowerCase()]).length;
+    infoHeader.innerHTML=`<strong style="color:${srvColor};">${data.name||country}</strong> — Serveur <span style="color:${srvColor};">${srv.toUpperCase()}</span><br/><span style="color:var(--text-secondary);font-size:0.78rem;">${memberNames.length} membres · PIB : <span style="color:var(--success);">${pib.toLocaleString('fr-FR')} $</span> · Power : <span style="color:var(--warning);">${power}</span> · <span class="online-dot"></span><span style="color:var(--success);">${onlineCount} en ligne</span> (Dynmap)</span>`;
+    playersList.innerHTML='';
+    if(memberNames.length===0){playersList.innerHTML=`<div class="warning-text">Aucun membre trouvé pour ce pays.</div>`;}
+    else{
+      const sorted=[...memberNames].sort((a,b)=>(!!dynMap[b.toLowerCase()]?1:0)-(!!dynMap[a.toLowerCase()]?1:0));
+      sorted.slice(0,50).forEach(name=>{
+        const pd=dynMap[name.toLowerCase()];const isOnline=!!pd;
+        const face=`https://skins.nationsglory.fr/face/${encodeURIComponent(name)}/32`;
+        let serverOnHtml='';
+        if(isOnline){
+          serverOnHtml=`<span class="online-dot"></span><span style="color:var(--success);">EN LIGNE — ${srv.toUpperCase()}</span>`;
+          if(pd.x!==undefined)serverOnHtml+=`<br><span style="font-size:0.68rem;color:var(--text-secondary);font-family:'Share Tech Mono';">X:${Math.round(pd.x)} Z:${Math.round(pd.z)}</span>`;
+        }else{serverOnHtml=`<span style="color:var(--text-secondary);">● Hors ligne</span>`;}
+        playersList.innerHTML+=`<div class="pays-player-card" style="${isOnline?'border-color:rgba(0,255,136,0.3);':''}"><img src="${face}" onerror="this.style.display='none'"/><div style="flex:1;min-width:0;"><div style="font-size:0.88rem;font-weight:600;">${name}</div><div style="font-size:0.75rem;">${serverOnHtml}</div></div></div>`;
+      });
+      if(memberNames.length>50)playersList.innerHTML+=`<div style="font-size:0.78rem;color:var(--text-secondary);padding:10px;">... et ${memberNames.length-50} autres membres</div>`;
+    }
+    result.style.display='flex';
+  }catch(e){loading.style.display='none';errEl.innerText='✗ Erreur lors de la récupération du pays.';errEl.style.display='block';}
+}
+
+// RED MATTER
+async function prepareRedMatter(){
+  const country=document.getElementById('rm-country').value.trim();
+  const srv=document.getElementById('rm-server').value;
+  const loading=document.getElementById('rm-loading');
+  const errEl=document.getElementById('rm-error');
+  const targetInfo=document.getElementById('rm-target-info');
+  if(!country)return;
+  resetRMSimulation();loading.style.display='flex';errEl.style.display='none';targetInfo.style.display='none';
+  try{
+    const [res,dynPlayers]=await Promise.all([apiFetch(`/country/${srv}/${encodeURIComponent(country)}`),dynmapGetPlayers(srv)]);
+    loading.style.display='none';
+    let pib=500000,power=100,claims=50,name=country;
+    if(res&&res.ok){const d=await res.json();pib=d.pib||d.bank||500000;power=d.power||100;claims=d.claims||50;name=d.name||country;}
+    else if(window.latestTarget&&window.latestTarget.name.toLowerCase()===country.toLowerCase()){pib=window.latestTarget.pib||500000;power=window.latestTarget.power||100;claims=window.latestTarget.claims||50;}
+    window.rmTargetData={name,pib,power,claims,server:srv};
+    const stolen=Math.floor(pib*0.20);
+    const powerLost=Math.floor(power*0.35);
+    const powerAfter=Math.max(0,power-powerLost);
+    const claimsLost=Math.floor(claims*0.05);
+    const profit=stolen-500000;
+    const subpowerAfter=claims>powerAfter;
+    const resistance=power>500?'⚠ ÉLEVÉE':power>200?'⚡ MODÉRÉE':'✓ FAIBLE';
+    document.getElementById('rm-target-name').innerText=name;
+    document.getElementById('rm-target-pib').innerText=pib.toLocaleString('fr-FR')+' $';
+    document.getElementById('rm-target-power').innerText=power;
+    document.getElementById('rm-pib-transfer').innerText=stolen.toLocaleString('fr-FR')+' $';
+    document.getElementById('rm-power-after').innerText=powerAfter+' (−'+powerLost+')';
+    document.getElementById('rm-claims-lost').innerText='~'+claimsLost+' claims';
+    const profitEl=document.getElementById('rm-profit');
+    profitEl.innerText=(profit>=0?'+':'')+profit.toLocaleString('fr-FR')+' $';
+    profitEl.style.color=profit>=0?'var(--success)':'var(--danger)';
+    document.getElementById('rm-subpower-after').innerHTML=subpowerAfter?`<span style="color:var(--danger);">⚠ OUI (pillable !)</span>`:`<span style="color:var(--success);">Non</span>`;
+    document.getElementById('rm-online-count').innerText=dynPlayers.length+' sur '+srv.toUpperCase();
+    document.getElementById('rm-resistance').innerHTML=`<span style="color:var(--warning);">${resistance}</span>`;
+    targetInfo.style.display='flex';
+  }catch(e){loading.style.display='none';errEl.innerText='✗ Impossible de récupérer les données de la cible.';errEl.style.display='block';}
+}
+function executeRedMatterSimulation(){
+  if(!window.rmTargetData)return;
+  const{pib,power}=window.rmTargetData;
+  const frame=document.getElementById('rm-simulation-frame');
+  const liveEl=document.getElementById('rm-power-live');
+  const timerEl=document.getElementById('rm-timer');
+  const stolenEl=document.getElementById('rm-pib-stolen');
+  frame.style.display='flex';if(rmTimerId)clearInterval(rmTimerId);
+  let secLeft=180,curPower=power;
+  const targetPower=Math.max(0,power-Math.floor(power*0.35));
+  const powerStep=(power-targetPower)/45;
+  const stolen=Math.floor(pib*0.20);
+  liveEl.innerText=curPower.toFixed(1);timerEl.innerText='03:00';stolenEl.innerText='0 $';
+  rmTimerId=setInterval(()=>{
+    secLeft-=4;curPower=Math.max(targetPower,curPower-powerStep);
+    const pct=1-(secLeft/180);
+    liveEl.innerText=curPower.toFixed(1);
+    stolenEl.innerText=Math.floor(stolen*pct).toLocaleString('fr-FR')+' $';
+    if(secLeft<=0){clearInterval(rmTimerId);timerEl.innerText='IMPACT STABILISÉ';stolenEl.innerText=stolen.toLocaleString('fr-FR')+' $';liveEl.innerText=targetPower;}
+    else{const m=Math.floor(secLeft/60).toString().padStart(2,'0');const s=(secLeft%60).toString().padStart(2,'0');timerEl.innerText=`${m}:${s}`;}
+  },1000);
+}
+function resetRMSimulation(){if(rmTimerId)clearInterval(rmTimerId);document.getElementById('rm-simulation-frame').style.display='none';}
+
+// REFERENTS
+async function loadReferents(){
+  const container=document.getElementById('referents-container');
+  const loading=document.getElementById('referents-loading');
+  container.innerHTML='';loading.style.display='flex';
+  try{
+    const promises=SERVERS.map(srv=>apiFetch(`/country/list/${srv}`).then(r=>(r&&r.ok)?r.json():null).then(d=>({srv,data:d})).catch(()=>({srv,data:null})));
+    const mmrPromise=apiFetch('/mmr').then(r=>(r&&r.ok)?r.json():[]).catch(()=>[]);
+    const[results,mmrData]=await Promise.all([Promise.all(promises),mmrPromise]);
+    loading.style.display='none';container.innerHTML='';
+    results.forEach(({srv,data})=>{
+      const color=SERVER_COLORS[srv]||'#fff';
+      let countriesList=Array.isArray(data)?data:(data&&typeof data==='object'?Object.values(data):[]);
+      let referents=[];
+      const refCountries=countriesList.filter(c=>typeof c==='object'&&c!==null&&(c.referent||c.isReferent||c.type==='referent'));
+      if(refCountries.length>0){
+        referents=refCountries.map(c=>({name:c.name||'?',mmr:c.mmr||'-',power:c.power||0}));
+      }else if(Array.isArray(mmrData)){
+        const srvMMR=mmrData.filter(m=>(m.server||'').toLowerCase()===srv).sort((a,b)=>(b.mmr||0)-(a.mmr||0)).slice(0,5);
+        referents=srvMMR.map(m=>({name:m.name||m.country||'?',mmr:m.mmr||m.score||'-',power:'-'}));
+      }
+      if(referents.length===0&&countriesList.length>0){
+        referents=countriesList.filter(c=>typeof c==='object'&&c!==null).sort((a,b)=>(b.power||0)-(a.power||0)).slice(0,5).map(c=>({name:c.name||'?',mmr:c.mmr||'-',power:c.power||0}));
+      }
+      let itemsHtml='';
+      if(referents.length>0){
+        referents.forEach((r,i)=>{
+          const mmrDisplay=r.mmr!=='-'?`<span style="color:var(--c-yellow);font-family:'Share Tech Mono';font-size:0.78rem;">${r.mmr} MMR</span>`:'';
+          itemsHtml+=`<div class="ref-item"><div style="display:flex;align-items:center;gap:8px;"><span style="color:var(--text-secondary);font-family:'Share Tech Mono';font-size:0.75rem;min-width:20px;">#${i+1}</span><div><span style="font-size:0.85rem;font-weight:600;">${r.name}</span>${r.power!=='-'?`<span style="font-size:0.68rem;color:var(--text-secondary);margin-left:6px;">⚡${r.power}</span>`:''}</div></div>${mmrDisplay}</div>`;
+        });
+      }else{itemsHtml=`<div style="font-size:0.78rem;color:var(--text-secondary);">Données non disponibles</div>`;}
+      container.innerHTML+=`<div class="ref-server-block"><div class="ref-server-title"><div style="width:8px;height:8px;border-radius:50%;background:${color};flex-shrink:0;"></div>${srv.toUpperCase()}<span style="font-size:0.65rem;color:var(--text-secondary);margin-left:auto;">${countriesList.length||'?'} pays</span></div>${itemsHtml}</div>`;
+    });
+  }catch(e){loading.style.display='none';container.innerHTML=`<div class="error-text">✗ Erreur lors du chargement des référents.</div>`;}
+}
+
+// SOUS-POWER
+async function loadSubpowerReport(){
+  const container=document.getElementById('subpower-list');
+  const loading=document.getElementById('subpower-loading');
+  container.innerHTML='';loading.style.display='flex';
+  try{
+    const promises=SERVERS.map(srv=>apiFetch(`/country/list/${srv}`).then(r=>(r&&r.ok)?r.json():null).then(d=>({srv,data:d})).catch(()=>({srv,data:null})));
+    const notationsPromise=apiFetch('/notations').then(r=>(r&&r.ok)?r.json():null).catch(()=>null);
+    const[results,notations]=await Promise.all([Promise.all(promises),notationsPromise]);
+    loading.style.display='none';
+    let found=false;
+    results.forEach(({srv,data})=>{
+      let countries=Array.isArray(data)?data:(data&&typeof data==='object'?Object.values(data):[]);
+      const subpower=countries.filter(c=>typeof c==='object'&&c!==null&&(c.claims||0)>(c.power||0)&&(c.claims||0)>0).sort((a,b)=>(b.claims-b.power)-(a.claims-a.power));
+      if(subpower.length>0){
+        found=true;const color=SERVER_COLORS[srv]||'#fff';
+        let itemsHtml=subpower.map(c=>{
+          const deficit=c.claims-c.power;const pib=c.pib||c.bank||0;
+          return`<div class="subpower-item"><div><strong>${c.name||'?'}</strong><span style="font-size:0.72rem;color:var(--text-secondary);margin-left:8px;font-family:'Share Tech Mono';">Power:<span style="color:var(--warning);">${c.power}</span> / Claims:<span style="color:var(--accent-bright);">${c.claims}</span>${pib?` · PIB:<span style="color:var(--success);">${pib.toLocaleString('fr-FR')}$</span>`:''}</span></div><span style="color:var(--danger);font-family:'Share Tech Mono';font-size:0.82rem;font-weight:bold;">−${deficit} CLAIMS</span></div>`;
+        }).join('');
+        container.innerHTML+=`<div class="subpower-server-block"><div class="subpower-server-title"><div style="width:8px;height:8px;border-radius:50%;background:${color};"></div>${srv.toUpperCase()} — <span style="color:var(--danger);">${subpower.length} pays vulnérables</span></div>${itemsHtml}</div>`;
+      }
+    });
+    if(!found&&notations&&Array.isArray(notations)){
+      const subpower=notations.filter(item=>item.claims>item.power);
+      if(subpower.length>0){
+        const byServer={};subpower.forEach(item=>{const s=(item.server||'unknown').toLowerCase();if(!byServer[s])byServer[s]=[];byServer[s].push(item);});
+        Object.entries(byServer).forEach(([srv,items])=>{
+          const color=SERVER_COLORS[srv]||'#fff';
+          let html=items.map(c=>{const deficit=c.claims-c.power;return`<div class="subpower-item"><div><strong>${c.name}</strong> — Power:<span style="color:var(--warning);">${c.power}</span>/Claims:<span style="color:var(--accent-bright);">${c.claims}</span></div><span style="color:var(--danger);font-family:'Share Tech Mono';font-weight:bold;">−${deficit}</span></div>`;}).join('');
+          container.innerHTML+=`<div class="subpower-server-block"><div class="subpower-server-title"><div style="width:8px;height:8px;border-radius:50%;background:${color};flex-shrink:0;"></div>${srv.toUpperCase()}</div>${html}</div>`;
+        });found=true;
+      }
+    }
+    if(!found)container.innerHTML=`<div class="success-text">✓ Aucun pays sous-power détecté ou données indisponibles.</div>`;
+  }catch(e){loading.style.display='none';container.innerHTML=`<div class="error-text">✗ Erreur lors de l'analyse sous-power.</div>`;}
+}
+
+// CONFIDENTIELLE
+function updateMasterPassword(){
+  const newPass=document.getElementById('new-master-pass').value.trim();
+  const confirmPass=document.getElementById('confirm-master-pass').value.trim();
+  const msgOk=document.getElementById('pass-change-msg');
+  const msgErr=document.getElementById('pass-change-err');
+  msgOk.style.display='none';msgErr.style.display='none';
+  if(!newPass){msgErr.innerText='✗ Le mot de passe ne peut pas être vide.';msgErr.style.display='block';return;}
+  if(newPass.length<6){msgErr.innerText='✗ Au moins 6 caractères requis.';msgErr.style.display='block';return;}
+  if(newPass!==confirmPass){msgErr.innerText='✗ Les mots de passe ne correspondent pas.';msgErr.style.display='block';return;}
+  localStorage.setItem('terminalPassword',newPass);
+  document.getElementById('new-master-pass').value='';
+  document.getElementById('confirm-master-pass').value='';
+  msgOk.innerText="✓ Nouveau code d'accès validé. Actif au prochain démarrage.";
+  msgOk.style.display='block';
+  setTimeout(()=>msgOk.style.display='none',5000);
+}
+</script>
+</body>
+</html>
